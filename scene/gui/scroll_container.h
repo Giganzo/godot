@@ -68,9 +68,15 @@ private:
 
 	int deadzone = 0;
 	bool follow_focus = false;
+	bool follow_focus_use_expand_margin = false;
 
 	struct ThemeCache {
 		Ref<StyleBox> panel_style;
+
+		int focus_padding_left = 0;
+		int focus_padding_right = 0;
+		int focus_padding_top = 0;
+		int focus_padding_bottom = 0;
 	} theme_cache;
 
 	void _cancel_drag();
@@ -114,6 +120,9 @@ public:
 
 	bool is_following_focus() const;
 	void set_follow_focus(bool p_follow);
+
+	bool is_use_expand_margin() const;
+	void set_use_expand_margin(bool p_expand);
 
 	HScrollBar *get_h_scroll_bar();
 	VScrollBar *get_v_scroll_bar();

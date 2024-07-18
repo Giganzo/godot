@@ -32,6 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "scene/main/window.h"
+#include "scene/resources/style_box_flat.h"
+#include "scene/resources/style_box_texture.h"
 #include "scene/theme/theme_db.h"
 
 Size2 ScrollContainer::get_minimum_size() const {
@@ -281,9 +283,28 @@ void ScrollContainer::ensure_control_visible(Control *p_control) {
 	Rect2 other_rect = p_control->get_global_rect();
 	float right_margin = v_scroll->is_visible() ? v_scroll->get_size().x : 0.0f;
 	float bottom_margin = h_scroll->is_visible() ? h_scroll->get_size().y : 0.0f;
+	float expand_margin[4] = {};
 
-	Vector2 diff = Vector2(MAX(MIN(other_rect.position.x, global_rect.position.x), other_rect.position.x + other_rect.size.x - global_rect.size.x + (!is_layout_rtl() ? right_margin : 0.0f)),
-			MAX(MIN(other_rect.position.y, global_rect.position.y), other_rect.position.y + other_rect.size.y - global_rect.size.y + bottom_margin));
+	if (follow_focus_use_expand_margin) {
+		if (p_control->has_theme_stylebox(SNAME("focus"))) {
+			if (p_control->get_theme_stylebox(SNAME("focus"))->get_class() == "StyleBoxFlat") {
+				Ref<StyleBoxFlat> sb_flat = p_control->get_theme_stylebox(SNAME("focus"));
+				expand_margin[SIDE_LEFT] =  sb_flat->get_expand_margin(SIDE_LEFT);
+				expand_margin[SIDE_TOP] =  sb_flat->get_expand_margin(SIDE_TOP);
+				expand_margin[SIDE_RIGHT] =  sb_flat->get_expand_margin(SIDE_RIGHT);
+				expand_margin[SIDE_BOTTOM] =  sb_flat->get_expand_margin(SIDE_BOTTOM);
+			} else if (p_control->get_theme_stylebox(SNAME("focus"))->get_class() == "StyleBoxTexture") {
+				Ref<StyleBoxTexture> sb_text = p_control->get_theme_stylebox(SNAME("focus"));
+				expand_margin[SIDE_LEFT] =  sb_text->get_expand_margin(SIDE_LEFT);
+				expand_margin[SIDE_TOP] =  sb_text->get_expand_margin(SIDE_TOP);
+				expand_margin[SIDE_RIGHT] =  sb_text->get_expand_margin(SIDE_RIGHT);
+				expand_margin[SIDE_BOTTOM] =  sb_text->get_expand_margin(SIDE_BOTTOM);
+			}
+		}
+	}
+
+	Vector2 diff = Vector2(MAX(MIN(other_rect.position.x - MAX(0, theme_cache.focus_padding_left) - expand_margin[SIDE_LEFT], global_rect.position.x), other_rect.position.x + other_rect.size.x + MAX(0, theme_cache.focus_padding_right) + expand_margin[SIDE_RIGHT] - global_rect.size.x + (!is_layout_rtl() ? right_margin : 0.0f)),
+			MAX(MIN(other_rect.position.y -  MAX(0, theme_cache.focus_padding_top) - expand_margin[SIDE_TOP], global_rect.position.y), other_rect.position.y + other_rect.size.y +  MAX(0, theme_cache.focus_padding_bottom) + expand_margin[SIDE_BOTTOM] - global_rect.size.y + bottom_margin));
 
 	set_h_scroll(get_h_scroll() + (diff.x - global_rect.position.x));
 	set_v_scroll(get_v_scroll() + (diff.y - global_rect.position.y));
@@ -532,6 +553,14 @@ void ScrollContainer::set_follow_focus(bool p_follow) {
 	follow_focus = p_follow;
 }
 
+bool ScrollContainer::is_use_expand_margin() const {
+	return follow_focus_use_expand_margin;
+}
+
+void ScrollContainer::set_use_expand_margin(bool p_expand) {
+	follow_focus_use_expand_margin = p_expand;
+}
+
 PackedStringArray ScrollContainer::get_configuration_warnings() const {
 	PackedStringArray warnings = Container::get_configuration_warnings();
 
@@ -589,6 +618,9 @@ void ScrollContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_follow_focus", "enabled"), &ScrollContainer::set_follow_focus);
 	ClassDB::bind_method(D_METHOD("is_following_focus"), &ScrollContainer::is_following_focus);
 
+	ClassDB::bind_method(D_METHOD("set_use_expand_margin", "enabled"), &ScrollContainer::set_use_expand_margin);
+	ClassDB::bind_method(D_METHOD("is_use_expand_margin"), &ScrollContainer::is_use_expand_margin);
+
 	ClassDB::bind_method(D_METHOD("get_h_scroll_bar"), &ScrollContainer::get_h_scroll_bar);
 	ClassDB::bind_method(D_METHOD("get_v_scroll_bar"), &ScrollContainer::get_v_scroll_bar);
 	ClassDB::bind_method(D_METHOD("ensure_control_visible", "control"), &ScrollContainer::ensure_control_visible);
@@ -597,6 +629,9 @@ void ScrollContainer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("scroll_ended"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_focus"), "set_follow_focus", "is_following_focus");
+
+	ADD_GROUP("Follow Focus", "follow_focus_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_focus_use_expand_margin"), "set_use_expand_margin", "is_use_expand_margin");
 
 	ADD_GROUP("Scroll", "scroll_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal", PROPERTY_HINT_NONE, "suffix:px"), "set_h_scroll", "get_h_scroll");
@@ -611,6 +646,11 @@ void ScrollContainer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SCROLL_MODE_AUTO);
 	BIND_ENUM_CONSTANT(SCROLL_MODE_SHOW_ALWAYS);
 	BIND_ENUM_CONSTANT(SCROLL_MODE_SHOW_NEVER);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ScrollContainer, focus_padding_left);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ScrollContainer, focus_padding_top);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ScrollContainer, focus_padding_right);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ScrollContainer, focus_padding_bottom);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollContainer, panel_style, "panel");
 
