@@ -284,6 +284,9 @@ void ScrollContainer::ensure_control_visible(Control *p_control) {
 	float right_margin = v_scroll->is_visible() ? v_scroll->get_size().x : 0.0f;
 	float bottom_margin = h_scroll->is_visible() ? h_scroll->get_size().y : 0.0f;
 	float expand_margin[4] = {};
+	int focus_padding[4] = {MAX(theme_cache.focus_padding_left, 0),MAX(theme_cache.focus_padding_top, 0),MAX(theme_cache.focus_padding_right, 0),MAX(theme_cache.focus_padding_bottom, 0)};
+	bool direction_horizontal = other_rect.position.x < global_rect.position.x ? true : false;
+	bool direction_vertical = other_rect.position.y < global_rect.position.y ? true : false;
 
 	if (follow_focus_use_expand_margin) {
 		if (p_control->has_theme_stylebox(SNAME("focus"))) {
@@ -303,11 +306,22 @@ void ScrollContainer::ensure_control_visible(Control *p_control) {
 		}
 	}
 
-	Vector2 diff = Vector2(MAX(MIN(other_rect.position.x - MAX(0, theme_cache.focus_padding_left) - expand_margin[SIDE_LEFT], global_rect.position.x), other_rect.position.x + other_rect.size.x + MAX(0, theme_cache.focus_padding_right) + expand_margin[SIDE_RIGHT] - global_rect.size.x + (!is_layout_rtl() ? right_margin : 0.0f)),
-			MAX(MIN(other_rect.position.y -  MAX(0, theme_cache.focus_padding_top) - expand_margin[SIDE_TOP], global_rect.position.y), other_rect.position.y + other_rect.size.y +  MAX(0, theme_cache.focus_padding_bottom) + expand_margin[SIDE_BOTTOM] - global_rect.size.y + bottom_margin));
+	Vector2 diff = Vector2(MAX(MIN(other_rect.position.x - expand_margin[SIDE_LEFT] - (is_layout_rtl() ? right_margin : 0.0f), global_rect.position.x), other_rect.position.x + other_rect.size.x + expand_margin[SIDE_RIGHT] - global_rect.size.x + (!is_layout_rtl() ? right_margin : 0.0f)), MAX(MIN(other_rect.position.y - expand_margin[SIDE_TOP], global_rect.position.y), other_rect.position.y + other_rect.size.y + expand_margin[SIDE_BOTTOM] - global_rect.size.y + bottom_margin));
 
-	set_h_scroll(get_h_scroll() + (diff.x - global_rect.position.x));
-	set_v_scroll(get_v_scroll() + (diff.y - global_rect.position.y));
+	if (other_rect.position.x < global_rect.position.x || other_rect.position.x + other_rect.size.x > global_rect.position.x + global_rect.size.x) {
+		if (direction_horizontal) {
+			set_h_scroll(get_h_scroll() + (diff.x - (global_rect.position.x + MAX(focus_padding[SIDE_LEFT] - MAX(focus_padding[SIDE_LEFT] + other_rect.size.x - global_rect.size.x + right_margin, 0.0f), 0.0f))));
+		} else {
+			set_h_scroll(get_h_scroll() + (diff.x - (global_rect.position.x - MAX(focus_padding[SIDE_RIGHT] - MAX(focus_padding[SIDE_RIGHT] + other_rect.size.x - global_rect.size.x + right_margin, 0.0f), 0.0f))));
+		}
+	}
+	if (other_rect.position.y < global_rect.position.y || other_rect.position.y + other_rect.size.y > global_rect.position.y + global_rect.size.y) {
+		if (direction_vertical) {
+			set_v_scroll(get_v_scroll() + (diff.y - (global_rect.position.y + MAX(focus_padding[SIDE_TOP] - MAX(focus_padding[SIDE_TOP] + other_rect.size.y - global_rect.size.y  + bottom_margin, 0.0f), 0.0f))));
+		} else {
+			set_v_scroll(get_v_scroll() + (diff.y - (global_rect.position.y - MAX(focus_padding[SIDE_BOTTOM] - MAX(focus_padding[SIDE_BOTTOM] + other_rect.size.y - global_rect.size.y  + bottom_margin, 0.0f), 0.0f))));
+		}
+	}
 }
 
 void ScrollContainer::_reposition_children() {
