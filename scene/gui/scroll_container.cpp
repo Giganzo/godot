@@ -308,19 +308,11 @@ void ScrollContainer::ensure_control_visible(Control *p_control) {
 
 	Vector2 diff = Vector2(MAX(MIN(other_rect.position.x - expand_margin[SIDE_LEFT] - (is_layout_rtl() ? right_margin : 0.0f), global_rect.position.x), other_rect.position.x + other_rect.size.x + expand_margin[SIDE_RIGHT] - global_rect.size.x + (!is_layout_rtl() ? right_margin : 0.0f)), MAX(MIN(other_rect.position.y - expand_margin[SIDE_TOP], global_rect.position.y), other_rect.position.y + other_rect.size.y + expand_margin[SIDE_BOTTOM] - global_rect.size.y + bottom_margin));
 
-	if (other_rect.position.x < global_rect.position.x || other_rect.position.x + other_rect.size.x > global_rect.position.x + global_rect.size.x) {
-		if (direction_horizontal) {
-			set_h_scroll(get_h_scroll() + (diff.x - (global_rect.position.x + MAX(focus_padding[SIDE_LEFT] - MAX(focus_padding[SIDE_LEFT] + other_rect.size.x - global_rect.size.x + right_margin, 0.0f), 0.0f))));
-		} else {
-			set_h_scroll(get_h_scroll() + (diff.x - (global_rect.position.x - MAX(focus_padding[SIDE_RIGHT] - MAX(focus_padding[SIDE_RIGHT] + other_rect.size.x - global_rect.size.x + right_margin, 0.0f), 0.0f))));
-		}
+	if (other_rect.position.x < global_rect.position.x + (is_layout_rtl() ? right_margin : 0.0f) || other_rect.position.x + other_rect.size.x > global_rect.position.x + global_rect.size.x - (!is_layout_rtl() ? right_margin : 0.0f)) {
+		set_h_scroll(get_h_scroll() + (diff.x - (global_rect.position.x + (MAX(focus_padding[SIDE_LEFT] - MAX(focus_padding[SIDE_LEFT] + other_rect.size.x - global_rect.size.x + right_margin, 0.0f), 0.0f) * (direction_horizontal ? 1 : -1)))));
 	}
-	if (other_rect.position.y < global_rect.position.y || other_rect.position.y + other_rect.size.y > global_rect.position.y + global_rect.size.y) {
-		if (direction_vertical) {
-			set_v_scroll(get_v_scroll() + (diff.y - (global_rect.position.y + MAX(focus_padding[SIDE_TOP] - MAX(focus_padding[SIDE_TOP] + other_rect.size.y - global_rect.size.y  + bottom_margin, 0.0f), 0.0f))));
-		} else {
-			set_v_scroll(get_v_scroll() + (diff.y - (global_rect.position.y - MAX(focus_padding[SIDE_BOTTOM] - MAX(focus_padding[SIDE_BOTTOM] + other_rect.size.y - global_rect.size.y  + bottom_margin, 0.0f), 0.0f))));
-		}
+	if (other_rect.position.y < global_rect.position.y || other_rect.position.y + other_rect.size.y > global_rect.position.y + global_rect.size.y - bottom_margin) {
+		set_v_scroll(get_v_scroll() + (diff.y - (global_rect.position.y + (MAX(focus_padding[SIDE_TOP] - MAX(focus_padding[SIDE_TOP] + other_rect.size.y - global_rect.size.y  + bottom_margin, 0.0f), 0.0f) * (direction_vertical ? 1 : -1)))));
 	}
 }
 
