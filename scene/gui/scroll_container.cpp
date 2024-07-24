@@ -289,29 +289,37 @@ void ScrollContainer::ensure_control_visible(Control *p_control) {
 	bool direction_vertical = other_rect.position.y < global_rect.position.y ? true : false;
 
 	if (follow_focus_use_expand_margin) {
-		if (p_control->has_theme_stylebox(SNAME("focus"))) {
-			if (p_control->get_theme_stylebox(SNAME("focus"))->get_class() == "StyleBoxFlat") {
-				Ref<StyleBoxFlat> sb_flat = p_control->get_theme_stylebox(SNAME("focus"));
-				expand_margin[SIDE_LEFT] =  sb_flat->get_expand_margin(SIDE_LEFT);
-				expand_margin[SIDE_TOP] =  sb_flat->get_expand_margin(SIDE_TOP);
-				expand_margin[SIDE_RIGHT] =  sb_flat->get_expand_margin(SIDE_RIGHT);
-				expand_margin[SIDE_BOTTOM] =  sb_flat->get_expand_margin(SIDE_BOTTOM);
-			} else if (p_control->get_theme_stylebox(SNAME("focus"))->get_class() == "StyleBoxTexture") {
-				Ref<StyleBoxTexture> sb_text = p_control->get_theme_stylebox(SNAME("focus"));
-				expand_margin[SIDE_LEFT] =  sb_text->get_expand_margin(SIDE_LEFT);
-				expand_margin[SIDE_TOP] =  sb_text->get_expand_margin(SIDE_TOP);
-				expand_margin[SIDE_RIGHT] =  sb_text->get_expand_margin(SIDE_RIGHT);
-				expand_margin[SIDE_BOTTOM] =  sb_text->get_expand_margin(SIDE_BOTTOM);
+		// Getting largest expand margin for each side
+		List<StringName> names;
+		Ref<Theme> theme = Object::cast_to<Control>(p_control->get_theme_owner_node())->get_theme();
+		if (theme != NULL) {
+			theme->get_stylebox_list(p_control->get_class(), &names);
+			Ref<Theme> d_theme = ThemeDB::get_singleton()->get_default_theme();
+			d_theme->get_stylebox_list(p_control->get_class(), &names);
+			for (const StringName &text : names ) {
+				if (p_control->get_theme_stylebox(text)->get_class() == "StyleBoxFlat") {
+					Ref<StyleBoxFlat> sb_flat = p_control->get_theme_stylebox(text);
+					expand_margin[SIDE_LEFT] =  expand_margin[SIDE_LEFT] < sb_flat->get_expand_margin(SIDE_LEFT) ? sb_flat->get_expand_margin(SIDE_LEFT) : expand_margin[SIDE_LEFT];
+					expand_margin[SIDE_TOP] =  expand_margin[SIDE_TOP] < sb_flat->get_expand_margin(SIDE_TOP) ? sb_flat->get_expand_margin(SIDE_TOP) : expand_margin[SIDE_TOP];
+					expand_margin[SIDE_RIGHT] =  expand_margin[SIDE_RIGHT] < sb_flat->get_expand_margin(SIDE_RIGHT) ? sb_flat->get_expand_margin(SIDE_RIGHT) : expand_margin[SIDE_RIGHT];
+					expand_margin[SIDE_BOTTOM] =  expand_margin[SIDE_BOTTOM] < sb_flat->get_expand_margin(SIDE_BOTTOM) ? sb_flat->get_expand_margin(SIDE_BOTTOM) : expand_margin[SIDE_BOTTOM];
+				} else if (p_control->get_theme_stylebox(text)->get_class() == "StyleBoxTexture") {
+					Ref<StyleBoxTexture> sb_flat = p_control->get_theme_stylebox(text);
+					expand_margin[SIDE_LEFT] =  expand_margin[SIDE_LEFT] < sb_flat->get_expand_margin(SIDE_LEFT) ? sb_flat->get_expand_margin(SIDE_LEFT) : expand_margin[SIDE_LEFT];
+					expand_margin[SIDE_TOP] =  expand_margin[SIDE_TOP] < sb_flat->get_expand_margin(SIDE_TOP) ? sb_flat->get_expand_margin(SIDE_TOP) : expand_margin[SIDE_TOP];
+					expand_margin[SIDE_RIGHT] =  expand_margin[SIDE_RIGHT] < sb_flat->get_expand_margin(SIDE_RIGHT) ? sb_flat->get_expand_margin(SIDE_RIGHT) : expand_margin[SIDE_RIGHT];
+					expand_margin[SIDE_BOTTOM] =  expand_margin[SIDE_BOTTOM] < sb_flat->get_expand_margin(SIDE_BOTTOM) ? sb_flat->get_expand_margin(SIDE_BOTTOM) : expand_margin[SIDE_BOTTOM];
+				}
 			}
 		}
 	}
 
 	Vector2 diff = Vector2(MAX(MIN(other_rect.position.x - expand_margin[SIDE_LEFT] - (is_layout_rtl() ? side_margin : 0.0f), global_rect.position.x), other_rect.position.x + other_rect.size.x + expand_margin[SIDE_RIGHT] - global_rect.size.x + (!is_layout_rtl() ? side_margin : 0.0f)), MAX(MIN(other_rect.position.y - expand_margin[SIDE_TOP], global_rect.position.y), other_rect.position.y + other_rect.size.y + expand_margin[SIDE_BOTTOM] - global_rect.size.y + bottom_margin));
 
-	if (other_rect.position.x < global_rect.position.x + (is_layout_rtl() ? side_margin : 0.0f) || other_rect.position.x + other_rect.size.x > global_rect.position.x + global_rect.size.x - (!is_layout_rtl() ? side_margin : 0.0f)) {
+	if (other_rect.position.x - expand_margin[SIDE_LEFT] < global_rect.position.x + (is_layout_rtl() ? side_margin : 0.0f) || other_rect.position.x + other_rect.size.x + expand_margin[SIDE_RIGHT] > global_rect.position.x + global_rect.size.x  - (!is_layout_rtl() ? side_margin : 0.0f)) {
 		set_h_scroll(get_h_scroll() + (diff.x - (global_rect.position.x + (MAX(focus_padding[(direction_horizontal ? SIDE_LEFT : SIDE_RIGHT)] - MAX(focus_padding[(direction_horizontal ? SIDE_LEFT : SIDE_RIGHT)] + other_rect.size.x - global_rect.size.x + side_margin, 0.0f), 0.0f) * (direction_horizontal ? 1 : -1)))));
 	}
-	if (other_rect.position.y < global_rect.position.y || other_rect.position.y + other_rect.size.y > global_rect.position.y + global_rect.size.y - bottom_margin) {
+	if (other_rect.position.y - expand_margin[SIDE_TOP] < global_rect.position.y || other_rect.position.y + other_rect.size.y + expand_margin[SIDE_BOTTOM] > global_rect.position.y + global_rect.size.y - bottom_margin) {
 		set_v_scroll(get_v_scroll() + (diff.y - (global_rect.position.y + (MAX(focus_padding[(direction_vertical ? SIDE_TOP : SIDE_BOTTOM)] - MAX(focus_padding[(direction_vertical ? SIDE_TOP : SIDE_BOTTOM)] + other_rect.size.y - global_rect.size.y  + bottom_margin, 0.0f), 0.0f) * (direction_vertical ? 1 : -1)))));
 	}
 }
