@@ -296,7 +296,18 @@ void ScrollContainer::ensure_control_visible(Control *p_control) {
 			theme->get_stylebox_list(p_control->get_class(), &names);
 			Ref<Theme> d_theme = ThemeDB::get_singleton()->get_default_theme();
 			d_theme->get_stylebox_list(p_control->get_class(), &names);
+			Dictionary d;
+			d["tab_focus"];
+			d["tab_disabled"];
+			d["tab_selected"];
+			d["tab_hovered"];
+			d["tab_unselected"];
 			for (const StringName &text : names ) {
+				// check for TabContainer, TabBar, ItemList, Tree, GraphEdit, MenuBar
+				// check for rtl and button?
+				if (d.has(text)) {
+					continue;
+				}
 				if (p_control->get_theme_stylebox(text)->get_class() == "StyleBoxFlat") {
 					Ref<StyleBoxFlat> sb_flat = p_control->get_theme_stylebox(text);
 					expand_margin[SIDE_LEFT] =  expand_margin[SIDE_LEFT] < sb_flat->get_expand_margin(SIDE_LEFT) ? sb_flat->get_expand_margin(SIDE_LEFT) : expand_margin[SIDE_LEFT];
