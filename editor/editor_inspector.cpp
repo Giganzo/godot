@@ -311,8 +311,10 @@ void EditorProperty::_notification(int p_what) {
 
 			if (can_revert && !is_read_only()) {
 				Ref<Texture2D> reload_icon = get_editor_theme_icon(SNAME("ReloadSmall"));
+				float vertical_padding = 4.0f;
+				float horizontal_padding = 4.0f;
 				text_limit -= reload_icon->get_width() + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
-				revert_rect = Rect2(ofs + text_limit, (size.height - reload_icon->get_height()) / 2, reload_icon->get_width(), reload_icon->get_height());
+				revert_rect = Rect2(ofs + text_limit, (size.height - (reload_icon->get_height() + vertical_padding)) / 2, reload_icon->get_width() + horizontal_padding, reload_icon->get_height() + vertical_padding);
 
 				Color color2(1, 1, 1);
 				if (revert_hover) {
@@ -323,7 +325,7 @@ void EditorProperty::_notification(int p_what) {
 				if (rtl) {
 					draw_texture(reload_icon, Vector2(size.width - revert_rect.position.x - reload_icon->get_width(), revert_rect.position.y), color2);
 				} else {
-					draw_texture(reload_icon, revert_rect.position, color2);
+					draw_texture(reload_icon, revert_rect.position + Vector2(0, vertical_padding/2), color2);
 				}
 			} else {
 				revert_rect = Rect2();
