@@ -291,36 +291,39 @@ void ScrollContainer::ensure_control_visible(Control *p_control) {
 	if (follow_focus_use_expand_margin) {
 		// Getting largest expand margin for each side
 		List<StringName> names;
-		Ref<Theme> theme = Object::cast_to<Control>(p_control->get_theme_owner_node())->get_theme();
-		if (theme != NULL) {
-			theme->get_stylebox_list(p_control->get_class(), &names);
-			Ref<Theme> d_theme = ThemeDB::get_singleton()->get_default_theme();
-			d_theme->get_stylebox_list(p_control->get_class(), &names);
-			Dictionary d;
-			d["tab_focus"];
-			d["tab_disabled"];
-			d["tab_selected"];
-			d["tab_hovered"];
-			d["tab_unselected"];
-			for (const StringName &text : names ) {
-				// check for TabContainer, TabBar, ItemList, Tree, GraphEdit, MenuBar
-				// check for rtl and button?
-				if (d.has(text)) {
-					continue;
-				}
-				if (p_control->get_theme_stylebox(text)->get_class() == "StyleBoxFlat") {
-					Ref<StyleBoxFlat> sb_flat = p_control->get_theme_stylebox(text);
-					expand_margin[SIDE_LEFT] =  expand_margin[SIDE_LEFT] < sb_flat->get_expand_margin(SIDE_LEFT) ? sb_flat->get_expand_margin(SIDE_LEFT) : expand_margin[SIDE_LEFT];
-					expand_margin[SIDE_TOP] =  expand_margin[SIDE_TOP] < sb_flat->get_expand_margin(SIDE_TOP) ? sb_flat->get_expand_margin(SIDE_TOP) : expand_margin[SIDE_TOP];
-					expand_margin[SIDE_RIGHT] =  expand_margin[SIDE_RIGHT] < sb_flat->get_expand_margin(SIDE_RIGHT) ? sb_flat->get_expand_margin(SIDE_RIGHT) : expand_margin[SIDE_RIGHT];
-					expand_margin[SIDE_BOTTOM] =  expand_margin[SIDE_BOTTOM] < sb_flat->get_expand_margin(SIDE_BOTTOM) ? sb_flat->get_expand_margin(SIDE_BOTTOM) : expand_margin[SIDE_BOTTOM];
-				} else if (p_control->get_theme_stylebox(text)->get_class() == "StyleBoxTexture") {
-					Ref<StyleBoxTexture> sb_flat = p_control->get_theme_stylebox(text);
-					expand_margin[SIDE_LEFT] =  expand_margin[SIDE_LEFT] < sb_flat->get_expand_margin(SIDE_LEFT) ? sb_flat->get_expand_margin(SIDE_LEFT) : expand_margin[SIDE_LEFT];
-					expand_margin[SIDE_TOP] =  expand_margin[SIDE_TOP] < sb_flat->get_expand_margin(SIDE_TOP) ? sb_flat->get_expand_margin(SIDE_TOP) : expand_margin[SIDE_TOP];
-					expand_margin[SIDE_RIGHT] =  expand_margin[SIDE_RIGHT] < sb_flat->get_expand_margin(SIDE_RIGHT) ? sb_flat->get_expand_margin(SIDE_RIGHT) : expand_margin[SIDE_RIGHT];
-					expand_margin[SIDE_BOTTOM] =  expand_margin[SIDE_BOTTOM] < sb_flat->get_expand_margin(SIDE_BOTTOM) ? sb_flat->get_expand_margin(SIDE_BOTTOM) : expand_margin[SIDE_BOTTOM];
-				}
+		// Ref<Theme> theme = Object::cast_to<Control>(p_control->get_theme_owner_node())->get_theme();
+		// if (theme != NULL) {
+		// 	theme->get_stylebox_list(p_control->get_class(), &names);
+		// }
+		// Ref<Theme> theme = ThemeDB::get_singleton()->get_default_theme();
+		// theme->get_stylebox_list(p_control->get_class(), &names);
+		ThemeDB::get_singleton()->get_default_theme()->get_stylebox_list(p_control->get_class(), &names);
+			// Ref<Theme> d_theme = ThemeDB::get_singleton()->get_default_theme();
+			// d_theme->get_stylebox_list(p_control->get_class(), &names);
+			// Dictionary d;
+			// d["tab_focus"];
+			// d["tab_disabled"];
+			// d["tab_selected"];
+			// d["tab_hovered"];
+			// d["tab_unselected"];
+		for (const StringName &text : names ) {
+			// check for TabContainer, TabBar, ItemList, Tree, GraphEdit, MenuBar
+			// check for rtl and button?
+			// if (d.has(text)) {
+			// 	continue;
+			// }
+			if (p_control->get_theme_stylebox(text)->get_class() == "StyleBoxFlat") {
+				Ref<StyleBoxFlat> sb_flat = p_control->get_theme_stylebox(text);
+				expand_margin[SIDE_LEFT] =  expand_margin[SIDE_LEFT] < sb_flat->get_expand_margin(SIDE_LEFT) ? sb_flat->get_expand_margin(SIDE_LEFT) : expand_margin[SIDE_LEFT];
+				expand_margin[SIDE_TOP] =  expand_margin[SIDE_TOP] < sb_flat->get_expand_margin(SIDE_TOP) ? sb_flat->get_expand_margin(SIDE_TOP) : expand_margin[SIDE_TOP];
+				expand_margin[SIDE_RIGHT] =  expand_margin[SIDE_RIGHT] < sb_flat->get_expand_margin(SIDE_RIGHT) ? sb_flat->get_expand_margin(SIDE_RIGHT) : expand_margin[SIDE_RIGHT];
+				expand_margin[SIDE_BOTTOM] =  expand_margin[SIDE_BOTTOM] < sb_flat->get_expand_margin(SIDE_BOTTOM) ? sb_flat->get_expand_margin(SIDE_BOTTOM) : expand_margin[SIDE_BOTTOM];
+			} else if (p_control->get_theme_stylebox(text)->get_class() == "StyleBoxTexture") {
+				Ref<StyleBoxTexture> sb_flat = p_control->get_theme_stylebox(text);
+				expand_margin[SIDE_LEFT] =  expand_margin[SIDE_LEFT] < sb_flat->get_expand_margin(SIDE_LEFT) ? sb_flat->get_expand_margin(SIDE_LEFT) : expand_margin[SIDE_LEFT];
+				expand_margin[SIDE_TOP] =  expand_margin[SIDE_TOP] < sb_flat->get_expand_margin(SIDE_TOP) ? sb_flat->get_expand_margin(SIDE_TOP) : expand_margin[SIDE_TOP];
+				expand_margin[SIDE_RIGHT] =  expand_margin[SIDE_RIGHT] < sb_flat->get_expand_margin(SIDE_RIGHT) ? sb_flat->get_expand_margin(SIDE_RIGHT) : expand_margin[SIDE_RIGHT];
+				expand_margin[SIDE_BOTTOM] =  expand_margin[SIDE_BOTTOM] < sb_flat->get_expand_margin(SIDE_BOTTOM) ? sb_flat->get_expand_margin(SIDE_BOTTOM) : expand_margin[SIDE_BOTTOM];
 			}
 		}
 	}
