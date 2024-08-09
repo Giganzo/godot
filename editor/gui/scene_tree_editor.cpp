@@ -317,10 +317,6 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			item->add_button(0, get_editor_theme_icon(warning_icon), BUTTON_WARNING, false, TTR("Node configuration warning:") + all_warnings);
 		}
 
-		if (p_node->is_unique_name_in_owner()) {
-			item->add_button(0, get_editor_theme_icon(SNAME("SceneUniqueName")), BUTTON_UNIQUE, p_node->get_owner() != EditorNode::get_singleton()->get_edited_scene(), vformat(TTR("This node can be accessed from within anywhere in the scene by preceding it with the '%s' prefix in a node path.\nClick to disable this."), UNIQUE_NODE_PREFIX));
-		}
-
 		int num_connections = p_node->get_persistent_signal_connection_count();
 		int num_groups = p_node->get_persistent_group_count();
 
@@ -417,6 +413,9 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		}
 		if (p_node->has_meta("_edit_group_")) {
 			item->add_button(0, get_editor_theme_icon(SNAME("Group")), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make them selectable."));
+		}
+		if (p_node->is_unique_name_in_owner()) {
+			item->add_button(0, get_editor_theme_icon(SNAME("SceneUniqueName")), BUTTON_UNIQUE, p_node->get_owner() != EditorNode::get_singleton()->get_edited_scene(), vformat(TTR("This node can be accessed from within anywhere in the scene by preceding it with the '%s' prefix in a node path.\nClick to disable this."), UNIQUE_NODE_PREFIX));
 		}
 
 		if (p_node->is_class("AnimationMixer")) {
