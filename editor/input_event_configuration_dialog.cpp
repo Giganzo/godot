@@ -768,4 +768,6 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	additional_options_container->add_child(location_container);
 
 	main_vbox->add_child(additional_options_container);
+
+	set_ok_button_text(TTR("Add Event"));
 }
