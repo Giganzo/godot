@@ -275,6 +275,7 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 				value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
 				if (value_input_popup) {
 					value_input_popup->hide();
+					get_viewport()->update_mouse_cursor_state();
 				}
 			} break;
 			default:
@@ -584,6 +585,7 @@ void EditorSpinSlider::_value_input_submitted(const String &p_text) {
 	value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
 	if (value_input_popup) {
 		value_input_popup->hide();
+		get_viewport()->update_mouse_cursor_state();
 	}
 }
 
@@ -674,6 +676,8 @@ void EditorSpinSlider::_focus_entered() {
 	callable_mp((Control *)value_input, &Control::grab_focus).call_deferred();
 	callable_mp(value_input, &LineEdit ::select_all).call_deferred();
 	emit_signal("value_focus_entered");
+	// Display the new cursor shape instantly.
+	callable_mp(get_viewport(), &Viewport::update_mouse_cursor_state).call_deferred();
 }
 
 void EditorSpinSlider::_bind_methods() {
@@ -732,6 +736,7 @@ void EditorSpinSlider::_ensure_input_popup() {
 
 EditorSpinSlider::EditorSpinSlider() {
 	set_focus_mode(FOCUS_ALL);
+	set_default_cursor_shape(Control::CURSOR_HSIZE);
 	grabber = memnew(TextureRect);
 	add_child(grabber);
 	grabber->hide();
