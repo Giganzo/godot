@@ -185,6 +185,11 @@ void EditorResourcePicker::_resource_saved(Object *p_resource) {
 void EditorResourcePicker::_update_menu() {
 	_update_menu_items();
 
+	if (edit_menu->is_visible()) {
+		edit_menu->hide();
+		return;
+	}
+
 	Rect2 gt = edit_button->get_screen_rect();
 	edit_menu->reset_size();
 	int ms = edit_menu->get_contents_minimum_size().width;
