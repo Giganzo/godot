@@ -68,6 +68,9 @@
 		<member name="update_on_text_changed" type="bool" setter="set_update_on_text_changed" getter="get_update_on_text_changed" default="false">
 			Sets the value of the [Range] for this [SpinBox] when the [LineEdit] text is [i]changed[/i] instead of [i]submitted[/i]. See [signal LineEdit.text_changed] and [signal LineEdit.text_submitted].
 		</member>
+		<member name="align_to_start_on_submit" type="bool" setter="set_align_to_start_on_submit" getter="get_align_to_start_on_submit" default="false">
+			If [code]true[/code], the [LineEdit] is set to the start of the text when submitted.
+		</member>
 	</members>
 	<theme_items>
 		<theme_item name="down_disabled_icon_modulate" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">

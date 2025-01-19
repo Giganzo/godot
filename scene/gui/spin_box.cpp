@@ -63,7 +63,12 @@ void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 			value += " " + suffix;
 		}
 	}
-	line_edit->set_text_with_selection(value);
+
+	if (!align_to_start_on_submit) {
+		line_edit->set_text_with_selection(value);
+		return;
+	}
+	line_edit->set_text(value);
 }
 
 void SpinBox::_text_submitted(const String &p_string) {
@@ -496,6 +501,18 @@ bool SpinBox::get_update_on_text_changed() const {
 	return update_on_text_changed;
 }
 
+void SpinBox::set_align_to_start_on_submit(bool p_enabled) {
+	if (align_to_start_on_submit == p_enabled) {
+		return;
+	}
+
+	align_to_start_on_submit = p_enabled;
+}
+
+bool SpinBox::get_align_to_start_on_submit() const {
+	return align_to_start_on_submit;
+}
+
 void SpinBox::set_select_all_on_focus(bool p_enabled) {
 	line_edit->set_select_all_on_focus(p_enabled);
 }
@@ -566,6 +583,8 @@ void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_editable"), &SpinBox::is_editable);
 	ClassDB::bind_method(D_METHOD("set_update_on_text_changed", "enabled"), &SpinBox::set_update_on_text_changed);
 	ClassDB::bind_method(D_METHOD("get_update_on_text_changed"), &SpinBox::get_update_on_text_changed);
+	ClassDB::bind_method(D_METHOD("set_align_to_start_on_submit", "enabled"), &SpinBox::set_align_to_start_on_submit);
+	ClassDB::bind_method(D_METHOD("get_align_to_start_on_submit"), &SpinBox::get_align_to_start_on_submit);
 	ClassDB::bind_method(D_METHOD("set_select_all_on_focus", "enabled"), &SpinBox::set_select_all_on_focus);
 	ClassDB::bind_method(D_METHOD("is_select_all_on_focus"), &SpinBox::is_select_all_on_focus);
 	ClassDB::bind_method(D_METHOD("apply"), &SpinBox::apply);
@@ -574,6 +593,7 @@ void SpinBox::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_on_text_changed"), "set_update_on_text_changed", "get_update_on_text_changed");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "align_to_start_on_submit"), "set_align_to_start_on_submit", "get_align_to_start_on_submit");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "prefix"), "set_prefix", "get_prefix");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_arrow_step", PROPERTY_HINT_RANGE, "0,10000,0.0001,or_greater"), "set_custom_arrow_step", "get_custom_arrow_step");

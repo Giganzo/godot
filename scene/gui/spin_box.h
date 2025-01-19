@@ -40,6 +40,7 @@ class SpinBox : public Range {
 
 	LineEdit *line_edit = nullptr;
 	bool update_on_text_changed = false;
+	bool align_to_start_on_submit = false;
 
 	struct SizingCache {
 		int buttons_block_width = 0;
@@ -163,6 +164,9 @@ public:
 
 	void set_update_on_text_changed(bool p_enabled);
 	bool get_update_on_text_changed() const;
+
+	void set_align_to_start_on_submit(bool p_enabled);
+	bool get_align_to_start_on_submit() const;
 
 	void set_select_all_on_focus(bool p_enabled);
 	bool is_select_all_on_focus() const;

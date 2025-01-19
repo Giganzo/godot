@@ -1964,6 +1964,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	hbc_animlist->add_child(anim_loop);
 
 	anim_speed = memnew(SpinBox);
+	anim_speed->set_align_to_start_on_submit(true);
 	anim_speed->set_suffix(TTR("FPS"));
 	anim_speed->set_min(0);
 	anim_speed->set_max(120);
