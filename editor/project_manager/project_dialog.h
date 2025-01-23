@@ -50,6 +50,7 @@ public:
 		MODE_IMPORT,
 		MODE_INSTALL,
 		MODE_RENAME,
+		MODE_DUPLICATE,
 	};
 
 private:
@@ -127,6 +128,7 @@ private:
 
 	void _project_path_selected(const String &p_path);
 	void _install_path_selected(const String &p_path);
+	bool _copy_project(const String &p_from, const String &p_to);
 
 	void _reset_name();
 	void _renderer_selected();

@@ -199,7 +199,7 @@ void ProjectDialog::_validate_path() {
 	}
 
 	is_folder_empty = true;
-	if (mode == MODE_NEW || mode == MODE_INSTALL || (mode == MODE_IMPORT && target_path_input_type == InputType::INSTALL_PATH)) {
+	if (mode == MODE_NEW || mode == MODE_INSTALL || (mode == MODE_IMPORT && target_path_input_type == InputType::INSTALL_PATH) || mode == MODE_DUPLICATE) {
 		if (create_dir->is_pressed()) {
 			if (!d->dir_exists(target_path.get_base_dir())) {
 				_set_message(TTR("The parent directory of the path specified doesn't exist."), MESSAGE_ERROR, target_path_input_type);
@@ -241,13 +241,16 @@ void ProjectDialog::_validate_path() {
 
 			if (!is_folder_empty) {
 				_set_message(TTR("The selected path is not empty. Choosing an empty folder is highly recommended."), MESSAGE_WARNING, target_path_input_type);
+				if (mode == MODE_DUPLICATE && zip_path == target_path) {
+					_set_message(TTR("Can't duplicate project onto itself. Choose another folder"), MESSAGE_ERROR, target_path_input_type);
+				}
 			}
 		}
 	}
 }
 
 String ProjectDialog::_get_target_path() {
-	if (mode == MODE_NEW || mode == MODE_INSTALL) {
+	if (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_DUPLICATE) {
 		return project_path->get_text();
 	} else if (mode == MODE_IMPORT) {
 		return install_path->get_text();
@@ -256,7 +259,7 @@ String ProjectDialog::_get_target_path() {
 	}
 }
 void ProjectDialog::_set_target_path(const String &p_text) {
-	if (mode == MODE_NEW || mode == MODE_INSTALL) {
+	if (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_DUPLICATE) {
 		project_path->set_text(p_text);
 	} else if (mode == MODE_IMPORT) {
 		install_path->set_text(p_text);
@@ -267,7 +270,7 @@ void ProjectDialog::_set_target_path(const String &p_text) {
 
 void ProjectDialog::_update_target_auto_dir() {
 	String new_auto_dir;
-	if (mode == MODE_NEW || mode == MODE_INSTALL) {
+	if (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_DUPLICATE) {
 		new_auto_dir = project_name->get_text();
 	} else if (mode == MODE_IMPORT) {
 		new_auto_dir = project_path->get_text().get_file().get_basename();
@@ -338,7 +341,7 @@ void ProjectDialog::_create_dir_toggled(bool p_pressed) {
 }
 
 void ProjectDialog::_project_name_changed() {
-	if (mode == MODE_NEW || mode == MODE_INSTALL) {
+	if (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_DUPLICATE) {
 		_update_target_auto_dir();
 	}
 
@@ -365,7 +368,7 @@ void ProjectDialog::_browse_project_path() {
 	if (mode == MODE_IMPORT && install_path->is_visible_in_tree()) {
 		// Select last ZIP file.
 		fdialog_project->set_current_path(path);
-	} else if ((mode == MODE_NEW || mode == MODE_INSTALL) && create_dir->is_pressed()) {
+	} else if ((mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_DUPLICATE) && create_dir->is_pressed()) {
 		// Select parent directory of project path.
 		fdialog_project->set_current_dir(path.get_base_dir());
 	} else {
@@ -408,7 +411,7 @@ void ProjectDialog::_browse_install_path() {
 void ProjectDialog::_project_path_selected(const String &p_path) {
 	show_dialog(false);
 
-	if (create_dir->is_pressed() && (mode == MODE_NEW || mode == MODE_INSTALL)) {
+	if (create_dir->is_pressed() && (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_DUPLICATE)) {
 		// Replace parent directory, but keep target dir name.
 		project_path->set_text(p_path.path_join(project_path->get_text().get_file()));
 	} else {
@@ -438,6 +441,43 @@ void ProjectDialog::_install_path_selected(const String &p_path) {
 	_install_path_changed();
 
 	get_ok_button()->grab_focus();
+}
+
+bool ProjectDialog::_copy_project(const String &p_from, const String &p_to) {
+	// ERR_FAIL_COND_MSG(mode != MODE_DUPLICATE, "Copy project is only used for MODE_DUPLICATE.");
+
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	if (!d->dir_exists(p_to) && d->make_dir(p_to) != OK) {
+		_set_message(TTR("Couldn't create directory, check permissions."), MESSAGE_ERROR);
+		return false;
+	}
+	Ref<DirAccess> dir = DirAccess::open(p_from);
+	if (dir.is_valid()) {
+		dir->set_include_navigational(false);
+		dir->set_include_hidden(true);
+		dir->list_dir_begin();
+
+		for (String F = dir->_get_next(); !F.is_empty(); F = dir->_get_next()) {
+			if (dir->current_is_dir()) {
+				if (F == ".godot" || F == ".git") {
+					continue;
+				}
+				if (!_copy_project(p_from.path_join(F), p_to.path_join(F))) {
+					return false;
+				}
+			} else {
+				Error err = dir->copy(p_from.path_join(F), p_to.path_join(F));
+				if (err != OK) {
+					_set_message(TTR("Failed to copy files, check permissions."), MESSAGE_ERROR);
+					dir->list_dir_end();
+					return false;
+				}
+			}
+		}
+		dir->list_dir_end();
+		return true;
+	}
+	return false;
 }
 
 void ProjectDialog::_reset_name() {
@@ -578,6 +618,20 @@ void ProjectDialog::ok_pressed() {
 		}
 	}
 
+	if (mode == MODE_DUPLICATE) {
+		if (create_dir->is_pressed()) {
+			Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			if (!d->file_exists(zip_path + "/project.godot")) {
+				_set_message(TTR("Couldn't create project; it doesn't contain a \"project.godot\" file."), MESSAGE_ERROR);
+				return;
+			}
+		}
+
+		if (!_copy_project(zip_path, path)) {
+			return;
+		}
+	}
+
 	// Two cases for importing a ZIP.
 	switch (mode) {
 		case MODE_IMPORT: {
@@ -704,7 +758,7 @@ void ProjectDialog::ok_pressed() {
 		} break;
 	}
 
-	if (mode == MODE_RENAME || mode == MODE_INSTALL) {
+	if (mode == MODE_RENAME || mode == MODE_INSTALL || mode == MODE_DUPLICATE) {
 		// Load project.godot as ConfigFile to set the new name.
 		ConfigFile cfg;
 		String project_godot = path.path_join("project.godot");
@@ -724,7 +778,7 @@ void ProjectDialog::ok_pressed() {
 	}
 
 	hide();
-	if (mode == MODE_NEW || mode == MODE_IMPORT || mode == MODE_INSTALL) {
+	if (mode == MODE_NEW || mode == MODE_IMPORT || mode == MODE_INSTALL || mode == MODE_DUPLICATE) {
 		emit_signal(SNAME("project_created"), path, edit_check_box->is_pressed());
 	} else if (mode == MODE_RENAME) {
 		emit_signal(SNAME("projects_updated"));
@@ -833,6 +887,19 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 			default_files_container->hide();
 
 			callable_mp((Control *)project_path, &Control::grab_focus).call_deferred();
+		} else if (mode == MODE_DUPLICATE) {
+			set_title(TTR("Duplicate Project:") + " " + zip_title);
+			set_ok_button_text(TTR("Duplicate"));
+
+			project_name->set_text(zip_title);
+
+			name_container->show();
+			install_path_container->hide();
+			renderer_container->hide();
+			default_files_container->hide();
+
+			callable_mp((Control *)project_name, &Control::grab_focus).call_deferred();
+			callable_mp(project_name, &LineEdit::select_all).call_deferred();
 		}
 
 		auto_dir = "";
