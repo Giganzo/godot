@@ -528,8 +528,9 @@ void EditorAudioBus::_effect_edited() {
 	}
 
 	if (effect->get_metadata(0) == Variant()) {
-		Rect2 area = effects->get_item_rect(effect);
+		Rect2 area = effects->get_item_rect(effect, 0);
 
+		effect_options->set_custom_anchor_rect(Rect2(effects->get_screen_position() + area.position, area.size));
 		effect_options->set_position(effects->get_screen_position() + area.position + Vector2(0, area.size.y));
 		effect_options->reset_size();
 		effect_options->popup();

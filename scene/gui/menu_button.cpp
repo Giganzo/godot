@@ -87,7 +87,16 @@ void MenuButton::show_popup() {
 		rect.position.x += rect.size.width - popup->get_size().width;
 	}
 	popup->set_position(rect.position);
-
+	// Rect2i parent_rect = popup->get_usable_parent_rect();
+	// if (parent_rect != Rect2i()) {
+	// 	Vector2 new_position = Vector2();
+	// 	if (popup->get_position().y + popup->get_size().y > parent_rect.position.y + parent_rect.size.y) {
+	// 		new_position = Vector2(rect.position.x, parent_rect.position.y + parent_rect.size.y - (popup->get_size().y + (parent_rect.size.y - get_screen_rect().position.y)));
+	// 		if (parent_rect.position.y + parent_rect.size.y - (popup->get_size().y + (parent_rect.size.y - get_screen_rect().position.y)) >= 0) {
+	// 			popup->set_position(new_position);
+	// 		}
+	// 	}
+	// }
 	// If not triggered by the mouse, start the popup with its first enabled item focused.
 	if (!_was_pressed_by_mouse()) {
 		for (int i = 0; i < popup->get_item_count(); i++) {

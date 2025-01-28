@@ -53,6 +53,9 @@ public:
 private:
 	HideReason hide_reason = HIDE_REASON_NONE;
 
+	NodePath anchor_button;
+	Rect2 custom_anchor_rect;
+
 	void _initialize_visible_parents();
 	void _deinitialize_visible_parents();
 
@@ -71,6 +74,12 @@ protected:
 
 public:
 	HideReason get_hide_reason() const { return hide_reason; }
+
+	void set_anchor_button(const NodePath &p_anchor_button);
+	NodePath get_anchor_button() const;
+
+	void set_custom_anchor_rect(const Rect2 &p_anchor_rect);
+	Rect2 get_custom_anchor_rect() const;
 
 	Popup();
 	~Popup();

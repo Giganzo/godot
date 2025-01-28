@@ -126,6 +126,7 @@ void MenuBar::_open_popup(int p_index, bool p_focus_item) {
 
 	active_menu = p_index;
 
+	pm->set_custom_anchor_rect(Rect2(screen_pos, item_rect.size));
 	pm->set_size(Size2(screen_size.x, 0));
 	screen_pos.y += screen_size.y;
 	if (is_layout_rtl()) {
