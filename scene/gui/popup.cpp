@@ -166,6 +166,22 @@ Rect2i Popup::_popup_adjust_rect() const {
 	}
 
 	Rect2i current(get_position(), get_size());
+	Rect2i popup_parent_rect = Rect2();
+
+	if (get_node_or_null(get_anchor_button())) {
+		 // PopupMenu popup_menu = Object::cast_to<PopupMenu>(p_from_node);
+		 // if (get_class() == "PopupMenu" || get_class() == "PopupPanel") {
+		if (Object::cast_to<Control>(get_node_or_null(get_anchor_button()))) {
+			popup_parent_rect = Object::cast_to<Control>(get_node_or_null(get_anchor_button()))->get_screen_rect();
+		}
+		// }
+	}
+	if (get_anchor_rect().size > Vector2()) {
+		popup_parent_rect = get_anchor_rect();
+
+	}
+
+
 
 	if (current.position.x + current.size.x > parent_rect.position.x + parent_rect.size.x) {
 		current.position.x = parent_rect.position.x + parent_rect.size.x - current.size.x;
@@ -176,7 +192,11 @@ Rect2i Popup::_popup_adjust_rect() const {
 	}
 
 	if (current.position.y + current.size.y > parent_rect.position.y + parent_rect.size.y) {
-		current.position.y = parent_rect.position.y + parent_rect.size.y - current.size.y;
+		if (popup_parent_rect != Rect2() && parent_rect.position.y + parent_rect.size.y - (current.size.y + (parent_rect.size.y - popup_parent_rect.position.y)) >= 0) {
+			current.position.y = parent_rect.position.y + parent_rect.size.y - (current.size.y + (parent_rect.size.y - popup_parent_rect.position.y));
+		} else {
+			current.position.y = parent_rect.position.y + parent_rect.size.y - current.size.y;
+		}
 	}
 
 	if (current.position.y < parent_rect.position.y) {
@@ -208,7 +228,38 @@ Rect2i Popup::_popup_adjust_rect() const {
 	return current;
 }
 
+void Popup::set_anchor_button(const NodePath &p_anchor_button) {
+	if (anchor_button == p_anchor_button) {
+		return;
+	}
+	anchor_button = p_anchor_button;
+}
+
+NodePath Popup::get_anchor_button() const {
+	return anchor_button;
+}
+
+void Popup::set_anchor_rect(const Rect2 &p_anchor_rect) {
+	if (anchor_rect == p_anchor_rect) {
+		return;
+	}
+	anchor_rect = p_anchor_rect;
+}
+
+Rect2 Popup::get_anchor_rect() const {
+	return anchor_rect;
+}
+
 void Popup::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_anchor_button", "direction"), &Popup::set_anchor_button);
+	ClassDB::bind_method(D_METHOD("get_anchor_button"), &Popup::get_anchor_button);
+
+	ClassDB::bind_method(D_METHOD("set_anchor_rect", "direction"), &Popup::set_anchor_rect);
+	ClassDB::bind_method(D_METHOD("get_anchor_rect"), &Popup::get_anchor_rect);
+
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anchor_button", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Button"), "set_anchor_button", "get_anchor_button");
+	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "anchor_rect", PROPERTY_HINT_NONE, "suffix:px"), "set_anchor_rect", "get_anchor_rect");
+
 	ADD_SIGNAL(MethodInfo("popup_hide"));
 }
 

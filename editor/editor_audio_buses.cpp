@@ -529,9 +529,13 @@ void EditorAudioBus::_effect_edited() {
 
 	if (effect->get_metadata(0) == Variant()) {
 		Rect2 area = effects->get_item_rect(effect);
+		float top_margin = effects->get_theme_stylebox(SceneStringName(panel))->get_content_margin(SIDE_TOP);
+		float v_separation = effects->get_theme_constant(SNAME("v_separation"));
 
-		effect_options->set_position(effects->get_screen_position() + area.position + Vector2(0, area.size.y));
+
+		effect_options->set_position(effects->get_screen_position() + area.position + Vector2(0, top_margin + v_separation) + Vector2(0, area.size.y));
 		effect_options->reset_size();
+		effect_options->set_anchor_rect(Rect2(effects->get_screen_position() + area.position + Vector2(0, top_margin), area.size + Vector2(0, top_margin + v_separation)));
 		effect_options->popup();
 		//add effect
 	} else {

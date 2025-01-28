@@ -125,6 +125,10 @@ void OptionButton::_notification(int p_what) {
 			theme_cache.arrow_icon->draw(ci, ofs, clr);
 		} break;
 
+		case NOTIFICATION_ENTER_TREE: {
+			popup->set_anchor_button(get_path());
+		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			popup->set_layout_direction((Window::LayoutDirection)get_layout_direction());
