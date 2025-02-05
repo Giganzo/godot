@@ -2109,15 +2109,33 @@ Control *Control::find_next_valid_focus() const {
 		if (!next_child) {
 			next_child = _next_control(from);
 			if (!next_child) { // Nothing else. Go up and find either window or subwindow.
-				next_child = const_cast<Control *>(this);
+				next_child = const_cast<Control *>(from);
 				while (next_child && !next_child->is_set_as_top_level()) {
 					next_child = cast_to<Control>(next_child->get_parent());
 				}
 
 				if (!next_child) {
-					next_child = const_cast<Control *>(this);
+					next_child = const_cast<Control *>(from);
+					WARN_PRINT(vformat("node !next: %s", next_child));
 					while (next_child) {
 						if (next_child->data.RI) {
+							AcceptDialog *parent = Object::cast_to<AcceptDialog>(next_child->get_parent());
+							if (parent) {
+								int idx = next_child->get_index() + 1;
+								for (int i = idx; i < parent->get_child_count(); i++) {
+									Control *c = Object::cast_to<Control>(parent->get_child(i));
+									if (c) {
+										break;
+									}
+									idx++;
+								}
+
+								if (idx >= parent->get_child_count()) {
+									idx = 0;
+								}
+								next_child = Object::cast_to<Control>(parent->get_child(idx));
+							}
+
 							break;
 						}
 						next_child = next_child->get_parent_control();
@@ -2184,10 +2202,28 @@ Control *Control::find_prev_valid_focus() const {
 		Control *prev_child = nullptr;
 
 		if (from->is_set_as_top_level() || !Object::cast_to<Control>(from->get_parent())) {
-			// Find last of the children.
+			AcceptDialog *parent = Object::cast_to<AcceptDialog>(from->get_parent());
+			if (parent) {
+				int idx = from->get_index() - 1;
+				WARN_PRINT(vformat("id is first %s", idx));
+				for (int i = idx; i >= 0; i--) {
+					Control *c = Object::cast_to<Control>(parent->get_child(i));
+					if (c) {
+						break;
+					}
+					idx--;
+				}
 
-			prev_child = _prev_control(from);
-
+				if (idx < 0) {
+					idx = parent->get_child_count() - 1;
+				}
+				WARN_PRINT(vformat("id is after %s", idx));
+				// from = Object::cast_to<Control>(parent->get_child(idx));
+				prev_child = _prev_control(Object::cast_to<Control>(parent->get_child(idx)));
+			} else {
+				// Find last of the children.
+				prev_child = _prev_control(from);
+			}
 		} else {
 			for (int i = (from->get_index() - 1); i >= 0; i--) {
 				Control *c = Object::cast_to<Control>(from->get_parent()->get_child(i));
