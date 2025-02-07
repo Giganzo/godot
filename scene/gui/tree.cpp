@@ -3122,9 +3122,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 						popup_menu->add_item(s.get_slicec(':', 0), s.get_slicec(':', 1).is_empty() ? i : s.get_slicec(':', 1).to_int());
 					}
 
-					popup_menu->set_size(Size2(col_width, 0));
-					popup_menu->set_position(get_screen_position() + Point2i(col_ofs, _get_title_button_height() + y_ofs + item_h) - theme_cache.offset);
-					popup_menu->popup();
+					popup_menu->popup(_get_custom_popup_rect(p_item, col));
 					popup_edited_item = p_item;
 					popup_edited_item_col = col;
 					//}
@@ -3183,7 +3181,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 				edited_col = col;
 				bool on_arrow = x > col_width - theme_cache.select_arrow->get_width();
 
-				custom_popup_rect = Rect2i(get_global_position() + Point2i(col_ofs, _get_title_button_height() + y_ofs + item_h - theme_cache.offset.y), Size2(get_column_width(col), item_h));
+				custom_popup_rect = _get_custom_popup_rect(p_item, col);
 
 				if (on_arrow || !p_item->cells[col].custom_button) {
 					emit_signal(SNAME("custom_popup_edited"), ((bool)(x >= (col_width - item_h / 2))));
@@ -4216,7 +4214,7 @@ bool Tree::edit_selected(bool p_force_edit) {
 	} else if (c.mode == TreeItem::CELL_MODE_CUSTOM) {
 		edited_item = s;
 		edited_col = col;
-		custom_popup_rect = Rect2i(get_global_position() + rect.position, rect.size);
+		custom_popup_rect = _get_custom_popup_rect(s, col);
 		emit_signal(SNAME("custom_popup_edited"), false);
 		item_edited(col, s);
 
@@ -4228,9 +4226,7 @@ bool Tree::edit_selected(bool p_force_edit) {
 			popup_menu->add_item(s2.get_slicec(':', 0), s2.get_slicec(':', 1).is_empty() ? i : s2.get_slicec(':', 1).to_int());
 		}
 
-		popup_menu->set_size(Size2(rect.size.width, 0));
-		popup_menu->set_position(get_screen_position() + rect.position + Point2i(0, rect.size.height));
-		popup_menu->popup();
+		popup_menu->popup(_get_custom_popup_rect(s, col));
 		popup_edited_item = s;
 		popup_edited_item_col = col;
 
@@ -4317,6 +4313,43 @@ Rect2 Tree::_get_item_focus_rect(const TreeItem *p_item) const {
 		rect = p_item->get_meta("__focus_rect");
 	}
 	return rect;
+}
+
+Rect2 Tree::_get_custom_popup_rect(TreeItem *p_item, int p_column) const {
+	Rect2 col_rect = get_item_rect(p_item, p_column);
+
+	int depth = 0;
+	TreeItem *ti = p_item;
+	while (ti != nullptr) {
+		ti = ti->get_parent();
+		if (ti == root) {
+			depth += (hide_root) ? 1 : 2;
+			break;
+		}
+		depth++;
+	}
+
+
+	// Compute total width of buttons block including spacings.
+	const TreeItem::Cell &c = p_item->cells[p_column];
+	int buttons_width = 0;
+	for (int j = c.buttons.size() - 1; j >= 0; j--) {
+		Ref<Texture2D> b = c.buttons[j].texture;
+		Size2 size = b->get_size() + theme_cache.button_pressed->get_minimum_size();
+		buttons_width += size.width + theme_cache.button_margin;
+	}
+	col_rect.size -= Size2(buttons_width, 0);
+
+
+	int extra_margin = (p_column == 0) ? depth * theme_cache.item_margin : 0;
+	popup_menu->set_size(Size2(col_rect.size.width - extra_margin, 0));
+	if (is_layout_rtl()) {
+		col_rect.position = get_screen_position() + Point2i(col_rect.position.x - (popup_menu->get_size().x - (col_rect.size.width - extra_margin + buttons_width)), col_rect.position.y + col_rect.size.y);
+	} else {
+		col_rect.position = get_screen_position() + Point2i(col_rect.position.x + extra_margin, col_rect.position.y + col_rect.size.y);
+	}
+	col_rect.size = Size2(col_rect.size.width - extra_margin, 0);
+	return col_rect;
 }
 
 bool Tree::is_editing() {

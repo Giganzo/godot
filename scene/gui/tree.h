@@ -717,6 +717,7 @@ private:
 	Rect2 _get_scrollbar_layout_rect() const;
 	Rect2 _get_content_rect() const; // Considering the background stylebox and scrollbars.
 	Rect2 _get_item_focus_rect(const TreeItem *p_item) const;
+	Rect2 _get_custom_popup_rect(TreeItem *p_item, int p_column) const;
 
 protected:
 	virtual void _update_theme_item_cache() override;
