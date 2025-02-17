@@ -3070,8 +3070,11 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 					}
 
 					popup_menu->set_size(Size2(col_width, 0));
-					popup_menu->set_position(get_screen_position() + Point2i(col_ofs, _get_title_button_height() + y_ofs + item_h) - theme_cache.offset);
-					popup_menu->popup();
+					if (is_layout_rtl()) {
+						popup_menu->popup(Rect2(get_screen_position() + Point2i((get_position().x + ((get_size().width + get_position().x) - (col_ofs - theme_cache.offset.x))) - popup_menu->get_size().width + theme_cache.offset.x, _get_title_button_height() + y_ofs + item_h + theme_cache.panel_style->get_offset().y) - theme_cache.offset, Size2(col_width, 0)));
+					} else {
+						popup_menu->popup(Rect2(get_screen_position() + Point2i(col_ofs, _get_title_button_height() + y_ofs + item_h + theme_cache.panel_style->get_offset().y) - theme_cache.offset, Size2(col_width, 0)));
+					}
 					popup_edited_item = p_item;
 					popup_edited_item_col = col;
 					//}
@@ -3130,7 +3133,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 				edited_col = col;
 				bool on_arrow = x > col_width - theme_cache.select_arrow->get_width();
 
-				custom_popup_rect = Rect2i(get_global_position() + Point2i(col_ofs, _get_title_button_height() + y_ofs + item_h - theme_cache.offset.y), Size2(get_column_width(col), item_h));
+				custom_popup_rect = Rect2(get_screen_position() + Point2i(col_ofs, _get_title_button_height() + y_ofs + item_h + theme_cache.panel_style->get_offset().y) - theme_cache.offset, Size2(col_width, item_h));
 
 				if (on_arrow || !p_item->cells[col].custom_button) {
 					emit_signal(SNAME("custom_popup_edited"), ((bool)(x >= (col_width - item_h / 2))));
@@ -5497,7 +5500,7 @@ Tree::FindColumnButtonResult Tree::_find_column_and_button_at_pos(int p_x, const
 		col = i;
 		break;
 	}
-
+	int col_width_minus_buttons = 0;
 	if (col >= 0) {
 		if (col == 0) {
 			int margin = p_x_ofs + theme_cache.item_margin;
@@ -5506,12 +5509,13 @@ Tree::FindColumnButtonResult Tree::_find_column_and_button_at_pos(int p_x, const
 			col_ofs += margin;
 			x -= margin;
 		} else {
+			col_width_minus_buttons = theme_cache.h_separation;
 			col_width -= theme_cache.h_separation;
 			limit_w -= theme_cache.h_separation;
 			x -= theme_cache.h_separation;
 		}
 
-		if (!cache.rtl && !p_item->cells[col].buttons.is_empty()) {
+		if (!p_item->cells[col].buttons.is_empty()) {
 			int button_w = 0;
 			for (int j = p_item->cells[col].buttons.size() - 1; j >= 0; j--) {
 				const Ref<Texture2D> &b = p_item->cells[col].buttons[j].texture;
@@ -5530,7 +5534,7 @@ Tree::FindColumnButtonResult Tree::_find_column_and_button_at_pos(int p_x, const
 			const Ref<Texture2D> &b = c.buttons[j].texture;
 			int w = b->get_size().width + theme_cache.button_pressed->get_minimum_size().width;
 
-			if (x >= col_width - w - offset_button_width - 1) {
+			if (x >= col_width - w - offset_button_width) {
 				result.button_index = j;
 				break;
 			}
@@ -5539,9 +5543,10 @@ Tree::FindColumnButtonResult Tree::_find_column_and_button_at_pos(int p_x, const
 		}
 	}
 
+	col_width_minus_buttons += col_width;
 	result.column_index = col;
-	result.column_offset = col_ofs;
-	result.column_width = col_width;
+	result.column_offset = col_ofs + theme_cache.panel_style->get_margin(SIDE_LEFT);
+	result.column_width = col_width_minus_buttons;
 	result.pos_x = x;
 
 	return result;
