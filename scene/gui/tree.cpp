@@ -5487,15 +5487,13 @@ Tree::FindColumnButtonResult Tree::_find_column_and_button_at_pos(int p_x, const
 			}
 		}
 
-		if (x > col_width) {
-			col_ofs += col_width;
-			x -= col_width;
-			limit_w -= col_width;
-			continue;
+		if (x < col_width) {
+			col = i;
+			break;
 		}
-
-		col = i;
-		break;
+		x -= col_width;
+		col_ofs += col_width;
+		limit_w -= col_width;
 	}
 
 	if (col >= 0) {
@@ -5511,36 +5509,40 @@ Tree::FindColumnButtonResult Tree::_find_column_and_button_at_pos(int p_x, const
 			x -= theme_cache.h_separation;
 		}
 
+		int button_w = 0;
 		if (!cache.rtl && !p_item->cells[col].buttons.is_empty()) {
-			int button_w = 0;
 			for (int j = p_item->cells[col].buttons.size() - 1; j >= 0; j--) {
 				const Ref<Texture2D> &b = p_item->cells[col].buttons[j].texture;
 				button_w += b->get_size().width + theme_cache.button_pressed->get_minimum_size().width + theme_cache.button_margin;
 			}
 
+			// width = MAX(button_w, MIN(limit_w, col_width));
 			col_width = MAX(button_w, MIN(limit_w, col_width));
 		}
 
 		// Cell button detection code.
 		// The first half of the button margin will be applied to the left button,
 		// and the other half to the right button.
+		int width = col_width;
+		col_width -= button_w;
 		const int offset_button_width = theme_cache.button_margin / 2;
 		const TreeItem::Cell &c = p_item->cells[col];
 		for (int j = c.buttons.size() - 1; j >= 0; j--) {
 			const Ref<Texture2D> &b = c.buttons[j].texture;
 			int w = b->get_size().width + theme_cache.button_pressed->get_minimum_size().width;
-
-			if (x >= col_width - w - offset_button_width - 1) {
+			WARN_PRINT(vformat("x %s, ofs %s", x, theme_cache.offset.x));
+			WARN_PRINT(vformat("w %s", col_width - w - offset_button_width));
+			if (x >= width - w - offset_button_width) {
 				result.button_index = j;
 				break;
 			}
 
-			col_width -= w + theme_cache.button_margin;
+			width -= w + theme_cache.button_margin;
 		}
 	}
 
 	result.column_index = col;
-	result.column_offset = col_ofs;
+	result.column_offset = col_ofs + theme_cache.panel_style->get_margin(SIDE_LEFT);
 	result.column_width = col_width;
 	result.pos_x = x;
 
