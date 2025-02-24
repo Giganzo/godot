@@ -8451,6 +8451,12 @@ void AnimationMarkerEdit::gui_input(const Ref<InputEvent> &p_event) {
 				_menu_selected(MENU_KEY_TOGGLE_MARKER_NAMES);
 			}
 		}
+
+		if (ED_IS_SHORTCUT("animation_marker_edit/insert_marker", p_event)) {
+			if (!read_only) {
+				_insert_marker(play_position_pos);
+			}
+		}
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -9044,6 +9050,8 @@ void AnimationMarkerEdit::_marker_rename_new_name_changed(const String &p_text) 
 }
 
 AnimationMarkerEdit::AnimationMarkerEdit() {
+	ED_SHORTCUT("animation_marker_edit/insert_marker", TTRC("Insert Marker"), KeyModifierMask::CMD_OR_CTRL | Key::M);
+
 	play_position = memnew(Control);
 	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
 	add_child(play_position);
