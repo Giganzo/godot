@@ -319,6 +319,7 @@ Rect2 ItemList::get_item_rect(int p_idx, bool p_expand) const {
 
 	Rect2 ret = items[p_idx].rect_cache;
 	ret.position += theme_cache.panel_style->get_offset();
+	ret.position.y -= scroll_bar_v->get_value();
 
 	if (p_expand && p_idx % current_columns == current_columns - 1) {
 		ret.size.width = get_size().width - ret.position.x;
