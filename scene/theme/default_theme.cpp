@@ -653,6 +653,17 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("set_min_buttons_width_from_icons", "SpinBox", 1);
 #endif
 
+	// SpinButton
+
+	theme->set_icon("up", "SpinButton", icons["value_up"]);
+	theme->set_icon("up_hover", "SpinButton", icons["value_up"]);
+	theme->set_icon("up_pressed", "SpinButton", icons["value_up"]);
+	theme->set_icon("up_disabled", "SpinButton", icons["value_up"]);
+	theme->set_icon("down", "SpinButton", icons["value_down"]);
+	theme->set_icon("down_hover", "SpinButton", icons["value_down"]);
+	theme->set_icon("down_pressed", "SpinButton", icons["value_down"]);
+	theme->set_icon("down_disabled", "SpinButton", icons["value_down"]);
+
 	// ScrollContainer
 
 	Ref<StyleBoxEmpty> empty;
