@@ -1733,7 +1733,7 @@ void LineEdit::_validate_caret_can_draw() {
 		draw_caret = true;
 		caret_blink_timer = 0.0;
 	}
-	caret_can_draw = editing && (window_has_focus || (menu && menu->has_focus())) && (has_focus() || caret_force_displayed);
+	caret_can_draw = editable && (window_has_focus || (menu && menu->has_focus())) && (has_focus() || caret_force_displayed);
 }
 
 void LineEdit::delete_char() {
