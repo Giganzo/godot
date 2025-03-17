@@ -1164,7 +1164,13 @@ void LineEdit::_notification(int p_what) {
 			if (using_placeholder) {
 				font_color = theme_cache.font_placeholder_color;
 			}
-
+			int left_margin = style->get_margin(SIDE_LEFT);
+			if (left_icon.is_valid()) {
+				Color color_icon(1, 1, 1, !is_editable() ? .5 * .9 : .9);
+				left_icon->draw(ci, Point2(style->get_margin(SIDE_LEFT), height / 2 - left_icon->get_height() / 2), color_icon);
+				left_margin += left_icon->get_width() + theme_cache.icon_separation;
+				x_ofs = MAX(x_ofs, left_margin);
+			}
 			bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 			if (right_icon.is_valid() || display_clear_icon) {
 				Ref<Texture2D> r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
@@ -1181,13 +1187,13 @@ void LineEdit::_notification(int p_what) {
 
 				if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
 					if (Math::is_zero_approx(scroll_offset)) {
-						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
+						x_ofs = MAX(left_margin, int(size.width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) - theme_cache.icon_separation * 2) / 2);
 					}
 				} else {
-					x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+					x_ofs = MAX(left_margin, x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT) - theme_cache.icon_separation);
 				}
 
-				ofs_max -= r_icon->get_width();
+				ofs_max -= r_icon->get_width() + theme_cache.icon_separation;
 			}
 
 			// Draw selections rects.
@@ -1268,7 +1274,11 @@ void LineEdit::_notification(int p_what) {
 								if (rtl) {
 									caret.l_caret = Rect2(Vector2(ofs_max, y), Size2(caret_width, h));
 								} else {
-									caret.l_caret = Rect2(Vector2(style->get_offset().x, y), Size2(caret_width, h));
+									int x = style->get_offset().x;
+									if (left_icon.is_valid()) {
+										x += left_icon->get_width() + theme_cache.icon_separation;
+									}
+									caret.l_caret = Rect2(Vector2(x, y), Size2(caret_width, h));
 								}
 							} break;
 							case HORIZONTAL_ALIGNMENT_CENTER: {
@@ -1562,14 +1572,19 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 
 	bool using_placeholder = text.is_empty() && ime_text.is_empty();
 	bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
+	int left_margin = style->get_margin(SIDE_LEFT);
+	if (left_icon.is_valid()) {
+		left_margin += left_icon->get_width() + theme_cache.icon_separation;
+		x_ofs = MAX(x_ofs, left_margin);
+	}
 	if (right_icon.is_valid() || display_clear_icon) {
 		Ref<Texture2D> r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
 		if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
 			if (Math::is_zero_approx(scroll_offset)) {
-				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
+				x_ofs = MAX(left_margin, int(get_size().width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) - theme_cache.icon_separation * 2) / 2);
 			}
 		} else {
-			x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+			x_ofs = MAX(left_margin, x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT) - theme_cache.icon_separation);
 		}
 	}
 
@@ -1613,14 +1628,19 @@ Vector2 LineEdit::get_caret_pixel_pos() {
 
 	bool using_placeholder = text.is_empty() && ime_text.is_empty();
 	bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
+	int left_margin = style->get_margin(SIDE_LEFT);
+	if (left_icon.is_valid()) {
+		left_margin += left_icon->get_width() + theme_cache.icon_separation;
+		x_ofs = MAX(x_ofs, left_margin);
+	}
 	if (right_icon.is_valid() || display_clear_icon) {
 		Ref<Texture2D> r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
 		if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
 			if (Math::is_zero_approx(scroll_offset)) {
-				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
+				x_ofs = MAX(left_margin, int(get_size().width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) - theme_cache.icon_separation * 2) / 2);
 			}
 		} else {
-			x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+			x_ofs = MAX(left_margin, x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT) - theme_cache.icon_separation);
 		}
 	}
 
@@ -1960,16 +1980,21 @@ void LineEdit::set_caret_column(int p_column) {
 	int ofs_max = get_size().width - style->get_margin(SIDE_RIGHT);
 	bool using_placeholder = text.is_empty() && ime_text.is_empty();
 	bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
+	int left_margin = style->get_margin(SIDE_LEFT);
+	if (left_icon.is_valid()) {
+		left_margin += left_icon->get_width() + theme_cache.icon_separation;
+		x_ofs = MAX(x_ofs, left_margin);
+	}
 	if (right_icon.is_valid() || display_clear_icon) {
 		Ref<Texture2D> r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
 		if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
 			if (Math::is_zero_approx(scroll_offset)) {
-				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
+				x_ofs = MAX(left_margin, int(get_size().width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) - theme_cache.icon_separation * 2) / 2);
 			}
 		} else {
-			x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+			x_ofs = MAX(left_margin, x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT) - theme_cache.icon_separation);
 		}
-		ofs_max -= r_icon->get_width();
+		ofs_max -= r_icon->get_width() + theme_cache.icon_separation;
 	}
 
 	// Note: Use two coordinates to fit IME input range.
@@ -2061,13 +2086,17 @@ Size2 LineEdit::get_minimum_size() const {
 
 	// Take icons into account.
 	int icon_max_width = 0;
+	if (left_icon.is_valid()) {
+		min_size.height = MAX(min_size.height, left_icon->get_height());
+		icon_max_width += left_icon->get_width() + theme_cache.icon_separation;
+	}
 	if (right_icon.is_valid()) {
 		min_size.height = MAX(min_size.height, right_icon->get_height());
-		icon_max_width = right_icon->get_width();
+		icon_max_width += right_icon->get_width() + theme_cache.icon_separation;
 	}
 	if (clear_button_enabled) {
 		min_size.height = MAX(min_size.height, theme_cache.clear_icon->get_height());
-		icon_max_width = MAX(icon_max_width, theme_cache.clear_icon->get_width());
+		icon_max_width = MAX(icon_max_width, theme_cache.clear_icon->get_width() + theme_cache.icon_separation);
 	}
 	min_size.width += icon_max_width;
 
@@ -2528,6 +2557,30 @@ void LineEdit::_texture_changed() {
 	queue_redraw();
 }
 
+void LineEdit::set_left_icon(const Ref<Texture2D> &p_icon) {
+	if (left_icon == p_icon) {
+		return;
+	}
+
+	if (left_icon.is_valid()) {
+		left_icon->disconnect_changed(callable_mp(this, &LineEdit::_texture_changed));
+	}
+
+	left_icon = p_icon;
+
+	if (left_icon.is_valid()) {
+		left_icon->connect_changed(callable_mp(this, &LineEdit::_texture_changed));
+	}
+
+	_fit_to_width();
+	update_minimum_size();
+	queue_redraw();
+}
+
+Ref<Texture2D> LineEdit::get_left_icon() {
+	return left_icon;
+}
+
 void LineEdit::set_right_icon(const Ref<Texture2D> &p_icon) {
 	if (right_icon == p_icon) {
 		return;
@@ -2642,9 +2695,12 @@ void LineEdit::_fit_to_width() {
 		int t_width = get_size().width - style->get_margin(SIDE_RIGHT) - style->get_margin(SIDE_LEFT);
 		bool using_placeholder = text.is_empty() && ime_text.is_empty();
 		bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
+		if (left_icon.is_valid()) {
+			t_width -= left_icon->get_width() + theme_cache.icon_separation;
+		}
 		if (right_icon.is_valid() || display_clear_icon) {
 			Ref<Texture2D> r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
-			t_width -= r_icon->get_width();
+			t_width -= r_icon->get_width() + theme_cache.icon_separation;
 		}
 		TS->shaped_text_fit_to_width(text_rid, MAX(t_width, full_width));
 	}
@@ -2910,6 +2966,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_deselect_on_focus_loss_enabled"), &LineEdit::is_deselect_on_focus_loss_enabled);
 	ClassDB::bind_method(D_METHOD("set_drag_and_drop_selection_enabled", "enable"), &LineEdit::set_drag_and_drop_selection_enabled);
 	ClassDB::bind_method(D_METHOD("is_drag_and_drop_selection_enabled"), &LineEdit::is_drag_and_drop_selection_enabled);
+	ClassDB::bind_method(D_METHOD("set_left_icon", "icon"), &LineEdit::set_left_icon);
+	ClassDB::bind_method(D_METHOD("get_left_icon"), &LineEdit::get_left_icon);
 	ClassDB::bind_method(D_METHOD("set_right_icon", "icon"), &LineEdit::set_right_icon);
 	ClassDB::bind_method(D_METHOD("get_right_icon"), &LineEdit::get_right_icon);
 	ClassDB::bind_method(D_METHOD("set_flat", "enabled"), &LineEdit::set_flat);
@@ -2981,6 +3039,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selecting_enabled"), "set_selecting_enabled", "is_selecting_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_and_drop_selection_enabled"), "set_drag_and_drop_selection_enabled", "is_drag_and_drop_selection_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "left_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_left_icon", "get_left_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "right_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_right_icon", "get_right_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_control_chars"), "set_draw_control_chars", "get_draw_control_chars");
@@ -3019,6 +3078,7 @@ void LineEdit::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, caret_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, LineEdit, minimum_character_width);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, selection_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, LineEdit, icon_separation);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, LineEdit, clear_icon, "clear");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, clear_button_color);

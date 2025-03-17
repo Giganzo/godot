@@ -145,6 +145,7 @@ private:
 	bool drag_action = false;
 	bool drag_caret_force_displayed = false;
 
+	Ref<Texture2D> left_icon;
 	Ref<Texture2D> right_icon;
 	bool flat = false;
 
@@ -201,6 +202,7 @@ private:
 		Color caret_color;
 		int minimum_character_width = 0;
 		Color selection_color;
+		int icon_separation = 0;
 
 		Ref<Texture2D> clear_icon;
 		Color clear_button_color;
@@ -395,6 +397,9 @@ public:
 
 	void set_drag_and_drop_selection_enabled(const bool p_enabled);
 	bool is_drag_and_drop_selection_enabled() const;
+
+	void set_left_icon(const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_left_icon();
 
 	void set_right_icon(const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_right_icon();
