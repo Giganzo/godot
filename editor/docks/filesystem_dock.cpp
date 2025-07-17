@@ -485,7 +485,7 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 	if (p_force || old_display_mode != display_mode) {
 		switch (display_mode) {
 			case DISPLAY_MODE_TREE_ONLY:
-				button_toggle_display_mode->set_button_icon(get_editor_theme_icon(SNAME("Panels1")));
+				button_toggle_display_mode->set_button_icon(get_editor_theme_icon(SNAME("Panels2")));
 				tree->show();
 				tree->set_v_size_flags(SIZE_EXPAND_FILL);
 				toolbar2_hbc->show();
@@ -501,7 +501,7 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 
 				const int actual_offset = is_vertical ? split_box_offset_v : split_box_offset_h;
 				split_box->set_split_offset(actual_offset);
-				const StringName icon = is_vertical ? SNAME("Panels2") : SNAME("Panels2Alt");
+				const StringName icon = is_vertical ? SNAME("Panels2Alt") : SNAME("Panels1");
 				button_toggle_display_mode->set_button_icon(get_editor_theme_icon(icon));
 
 				tree->show();
@@ -588,11 +588,11 @@ void FileSystemDock::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_display_mode(true);
 
-			StringName mode_icon = "Panels1";
+			StringName mode_icon = "Panels2";
 			if (display_mode == DISPLAY_MODE_VSPLIT) {
-				mode_icon = "Panels2";
-			} else if (display_mode == DISPLAY_MODE_HSPLIT) {
 				mode_icon = "Panels2Alt";
+			} else if (display_mode == DISPLAY_MODE_HSPLIT) {
+				mode_icon = "Panels1";
 			}
 			button_toggle_display_mode->set_button_icon(get_editor_theme_icon(mode_icon));
 
