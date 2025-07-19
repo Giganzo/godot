@@ -7868,7 +7868,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bottom_hf->add_child(memnew(VSeparator));
 
 	bezier_edit_icon = memnew(Button);
-	bezier_edit_icon->set_flat(true);
+	bezier_edit_icon->set_theme_type_variation(SceneStringName(FlatButton));
 	bezier_edit_icon->set_disabled(true);
 	bezier_edit_icon->set_toggle_mode(true);
 	bezier_edit_icon->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_toggle_bezier_edit));
@@ -7877,7 +7877,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bottom_hf->add_child(bezier_edit_icon);
 
 	function_name_toggler = memnew(Button);
-	function_name_toggler->set_flat(true);
+	function_name_toggler->set_theme_type_variation(SceneStringName(FlatButton));
 	function_name_toggler->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_toggle_function_names));
 	function_name_toggler->set_shortcut(ED_SHORTCUT("animation_editor/toggle_function_names", TTRC("Toggle method names")));
 	function_name_toggler->set_toggle_mode(true);
@@ -7887,7 +7887,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bottom_hf->add_child(function_name_toggler);
 
 	selected_filter = memnew(Button);
-	selected_filter->set_flat(true);
+	selected_filter->set_theme_type_variation(SceneStringName(FlatButton));
 	selected_filter->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_view_group_toggle)); // Same function works the same.
 	selected_filter->set_toggle_mode(true);
 	selected_filter->set_tooltip_text(TTR("Only show tracks from nodes selected in tree."));
@@ -7895,7 +7895,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bottom_hf->add_child(selected_filter);
 
 	alphabetic_sorting = memnew(Button);
-	alphabetic_sorting->set_flat(true);
+	alphabetic_sorting->set_theme_type_variation(SceneStringName(FlatButton));
 	alphabetic_sorting->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_update_tracks));
 	alphabetic_sorting->set_toggle_mode(true);
 	alphabetic_sorting->set_tooltip_text(TTR("Sort tracks/groups alphabetically.\nIf disabled, tracks are shown in the order they are added and can be reordered using drag-and-drop."));
@@ -7903,7 +7903,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bottom_hf->add_child(alphabetic_sorting);
 
 	view_group = memnew(Button);
-	view_group->set_flat(true);
+	view_group->set_theme_type_variation(SceneStringName(FlatButton));
 	view_group->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_view_group_toggle));
 	view_group->set_toggle_mode(true);
 	view_group->set_tooltip_text(TTR("Group tracks by node or display them as plain list."));
@@ -7912,7 +7912,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bottom_hf->add_child(memnew(VSeparator));
 
 	snap_timeline = memnew(Button);
-	snap_timeline->set_flat(true);
+	snap_timeline->set_theme_type_variation(SceneStringName(FlatButton));
 	bottom_hf->add_child(snap_timeline);
 	snap_timeline->set_disabled(true);
 	snap_timeline->set_toggle_mode(true);
@@ -7920,7 +7920,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	snap_timeline->set_tooltip_text(TTR("Apply snapping to timeline cursor."));
 
 	snap_keys = memnew(Button);
-	snap_keys->set_flat(true);
+	snap_keys->set_theme_type_variation(SceneStringName(FlatButton));
 	bottom_hf->add_child(snap_keys);
 	snap_keys->set_disabled(true);
 	snap_keys->set_toggle_mode(true);
@@ -7928,7 +7928,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	snap_keys->set_tooltip_text(TTR("Apply snapping to selected key(s)."));
 
 	fps_compat = memnew(Button);
-	fps_compat->set_flat(true);
+	fps_compat->set_theme_type_variation(SceneStringName(FlatButton));
 	bottom_hf->add_child(fps_compat);
 	fps_compat->set_disabled(true);
 	fps_compat->set_toggle_mode(true);
@@ -7982,14 +7982,14 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	ED_SHORTCUT("animation_editor/auto_fit", TTRC("Fit to panel"), KeyModifierMask::ALT | Key::F);
 
 	auto_fit = memnew(Button);
-	auto_fit->set_flat(true);
+	auto_fit->set_theme_type_variation(SceneStringName(FlatButton));
 	auto_fit->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_auto_fit));
 	auto_fit->set_shortcut(ED_GET_SHORTCUT("animation_editor/auto_fit"));
 	auto_fit->set_accessibility_name(TTRC("Auto Fit"));
 	bottom_hf->add_child(auto_fit);
 
 	auto_fit_bezier = memnew(Button);
-	auto_fit_bezier->set_flat(true);
+	auto_fit_bezier->set_theme_type_variation(SceneStringName(FlatButton));
 	auto_fit_bezier->set_visible(false);
 	auto_fit_bezier->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_auto_fit_bezier));
 	auto_fit_bezier->set_shortcut(ED_GET_SHORTCUT("animation_editor/auto_fit"));
