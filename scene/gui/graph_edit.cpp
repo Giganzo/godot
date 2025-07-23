@@ -1977,7 +1977,13 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 	ERR_FAIL_NULL_MSG(connections_layer, "connections_layer is missing.");
 
 	ERR_FAIL_COND(p_ev.is_null());
-	if (panner->gui_input(p_ev, get_global_rect())) {
+	bool panner_active = panner->gui_input(p_ev, get_global_rect());
+	if (panner->is_panning()) {
+		set_default_cursor_shape(CURSOR_DRAG);
+	} else {
+		set_default_cursor_shape(CURSOR_ARROW);
+	}
+	if (panner_active) {
 		return;
 	}
 
