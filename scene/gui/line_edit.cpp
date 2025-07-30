@@ -629,7 +629,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	if (editable && !editing && k->is_action_pressed("ui_text_submit", false)) {
+	if (editable && !editing && k->is_action_pressed("ui_accept", false)) {
 		edit();
 		emit_signal(SNAME("editing_toggled"), true);
 		accept_event();
