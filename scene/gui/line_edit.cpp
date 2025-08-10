@@ -1128,8 +1128,7 @@ bool LineEdit::_is_over_clear_button(const Point2 &p_pos) const {
 		return false;
 	}
 	Ref<Texture2D> icon = theme_cache.clear_icon;
-	int x_ofs = theme_cache.normal->get_margin(SIDE_RIGHT);
-	return p_pos.x > get_size().width - icon->get_width() - x_ofs;
+	return is_layout_rtl() ? p_pos.x < theme_cache.normal->get_margin(SIDE_LEFT) + icon->get_width() : p_pos.x > get_size().width - icon->get_width() - theme_cache.normal->get_margin(SIDE_RIGHT);
 }
 
 void LineEdit::_update_theme_item_cache() {
@@ -1226,12 +1225,12 @@ void LineEdit::_notification(int p_what) {
 					if (rtl) {
 						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - Math::ceil(style->get_margin(SIDE_RIGHT) + (text_width))));
 					} else {
-						x_ofs = style->get_offset().x;
+						x_ofs = style->get_margin(SIDE_LEFT);
 					}
 				} break;
 				case HORIZONTAL_ALIGNMENT_CENTER: {
 					if (!Math::is_zero_approx(scroll_offset)) {
-						x_ofs = style->get_offset().x;
+						x_ofs = style->get_margin(SIDE_LEFT);
 					} else {
 						int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
 						int centered = int((size.width - total_margin - text_width)) / 2;
@@ -1240,23 +1239,56 @@ void LineEdit::_notification(int p_what) {
 				} break;
 				case HORIZONTAL_ALIGNMENT_RIGHT: {
 					if (rtl) {
-						x_ofs = style->get_offset().x;
+						x_ofs = style->get_margin(SIDE_LEFT);
 					} else {
 						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - Math::ceil(style->get_margin(SIDE_RIGHT) + (text_width))));
 					}
 				} break;
 			}
 			bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
-			if (right_icon.is_valid() || display_clear_icon) {
-				Ref<Texture2D> r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
+			Ref<Texture2D> l_icon;
+			Ref<Texture2D> r_icon;
+			int l_icon_sep = theme_cache.left_icon_separation;
+			int r_icon_sep = theme_cache.right_icon_separation;
+			if (!rtl) {
+				if (left_icon.is_valid()) {
+					l_icon = left_icon;
+				}
+				if (right_icon.is_valid() || display_clear_icon) {
+					r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
+				}
+			} else {
+				if (left_icon.is_valid()) {
+					r_icon = left_icon;
+				}
+				if (right_icon.is_valid() || display_clear_icon) {
+					l_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
+				}
+				l_icon_sep = theme_cache.right_icon_separation;
+				r_icon_sep = theme_cache.left_icon_separation;
+			}
+			if (r_icon.is_valid()) {
 				if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
 					if (Math::is_zero_approx(scroll_offset)) {
 						int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
-						int center = int(size.width - total_margin - text_width - r_icon->get_width()) / 2;
+						int center = int(size.width - total_margin - text_width - r_icon->get_width() - r_icon_sep) / 2;
 						x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, center);
 					}
 				} else {
-					x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+					x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - r_icon_sep);
+				}
+			}
+			if (l_icon.is_valid()) {
+				if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
+					if (Math::is_zero_approx(scroll_offset)) {
+						int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
+						int center = int(size.width - total_margin - text_width - l_icon->get_width() - (r_icon.is_valid() ? r_icon->get_width() + r_icon_sep : 0)) / 2;
+						x_ofs = style->get_margin(SIDE_LEFT) + l_icon->get_width() + l_icon_sep + MAX(0, center);
+					} else {
+						x_ofs += l_icon->get_width() + l_icon_sep;
+					}
+				} else {
+					x_ofs = MAX(style->get_margin(SIDE_LEFT) + l_icon->get_width() + l_icon_sep, x_ofs);
 				}
 			}
 
@@ -1352,12 +1384,12 @@ void LineEdit::_notification(int p_what) {
 					if (rtl) {
 						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - Math::ceil(style->get_margin(SIDE_RIGHT) + (text_width))));
 					} else {
-						x_ofs = style->get_offset().x;
+						x_ofs = style->get_margin(SIDE_LEFT);
 					}
 				} break;
 				case HORIZONTAL_ALIGNMENT_CENTER: {
 					if (!Math::is_zero_approx(scroll_offset)) {
-						x_ofs = style->get_offset().x;
+						x_ofs = style->get_margin(SIDE_LEFT);
 					} else {
 						int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
 						int centered = int((size.width - total_margin - text_width)) / 2;
@@ -1366,7 +1398,7 @@ void LineEdit::_notification(int p_what) {
 				} break;
 				case HORIZONTAL_ALIGNMENT_RIGHT: {
 					if (rtl) {
-						x_ofs = style->get_offset().x;
+						x_ofs = style->get_margin(SIDE_LEFT);
 					} else {
 						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - Math::ceil(style->get_margin(SIDE_RIGHT) + (text_width))));
 					}
@@ -1394,8 +1426,28 @@ void LineEdit::_notification(int p_what) {
 			}
 
 			bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
-			if (right_icon.is_valid() || display_clear_icon) {
-				Ref<Texture2D> r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
+			Ref<Texture2D> l_icon;
+			Ref<Texture2D> r_icon;
+			int l_icon_sep = theme_cache.left_icon_separation;
+			int r_icon_sep = theme_cache.right_icon_separation;
+			if (!rtl) {
+				if (left_icon.is_valid()) {
+					l_icon = left_icon;
+				}
+				if (right_icon.is_valid() || display_clear_icon) {
+					r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
+				}
+			} else {
+				if (left_icon.is_valid()) {
+					r_icon = left_icon;
+				}
+				if (right_icon.is_valid() || display_clear_icon) {
+					l_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
+				}
+				l_icon_sep = theme_cache.right_icon_separation;
+				r_icon_sep = theme_cache.left_icon_separation;
+			}
+			if (r_icon.is_valid()) {
 				Color color_icon(1, 1, 1, !is_editable() ? .5 * .9 : .9);
 				if (display_clear_icon) {
 					if (clear_button_status.press_attempt && clear_button_status.pressing_inside) {
@@ -1410,14 +1462,30 @@ void LineEdit::_notification(int p_what) {
 				if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
 					if (Math::is_zero_approx(scroll_offset)) {
 						int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
-						int center = int(size.width - total_margin - text_width - r_icon->get_width()) / 2;
+						int center = int(size.width - total_margin - text_width - r_icon->get_width() - r_icon_sep) / 2;
 						x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, center);
 					}
 				} else {
-					x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+					x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - r_icon_sep);
 				}
 
-				ofs_max -= r_icon->get_width();
+				ofs_max -= r_icon->get_width() + r_icon_sep;
+			}
+			if (l_icon.is_valid()) {
+				Color color_icon(1, 1, 1, !is_editable() ? .5 * .9 : .9);
+				l_icon->draw(ci, Point2(style->get_margin(SIDE_LEFT), height / 2 - l_icon->get_height() / 2), color_icon);
+
+				if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
+					if (Math::is_zero_approx(scroll_offset)) {
+						int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
+						int center = int(size.width - total_margin - text_width - l_icon->get_width() - l_icon_sep - (r_icon.is_valid() ? r_icon->get_width() + r_icon_sep : 0)) / 2;
+						x_ofs = style->get_margin(SIDE_LEFT) + l_icon->get_width() + l_icon_sep + MAX(0, center);
+					} else {
+						x_ofs += l_icon->get_width() + l_icon_sep;
+					}
+				} else {
+					x_ofs = MAX(style->get_margin(SIDE_LEFT) + l_icon->get_width() + l_icon_sep, x_ofs);
+				}
 			}
 
 			// Draw selections rects.
@@ -1500,22 +1568,27 @@ void LineEdit::_notification(int p_what) {
 								if (rtl) {
 									caret.l_caret = Rect2(Vector2(ofs_max, y), Size2(caret_width, h));
 								} else {
-									caret.l_caret = Rect2(Vector2(style->get_offset().x, y), Size2(caret_width, h));
+									caret.l_caret = Rect2(Vector2(x_ofs, y), Size2(caret_width, h));
 								}
 							} break;
 							case HORIZONTAL_ALIGNMENT_CENTER: {
-								int icon_width = 0;
-								if (right_icon.is_valid()) {
-									icon_width = right_icon->get_width();
+								int total_icon_width = 0;
+								int l_icon_width = 0;
+								if (r_icon.is_valid()) {
+									total_icon_width = r_icon->get_width() + r_icon_sep;
+								}
+								if (l_icon.is_valid()) {
+									l_icon_width = l_icon->get_width() + l_icon_sep;
+									total_icon_width += l_icon_width;
 								}
 								int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
-								int center = int(size.width - total_margin - icon_width) / 2;
+								int center = int(size.width - total_margin - total_icon_width) / 2;
 
-								caret.l_caret = Rect2(Vector2(style->get_margin(SIDE_LEFT) + MAX(0, center), y), Size2(caret_width, h));
+								caret.l_caret = Rect2(Vector2(style->get_margin(SIDE_LEFT) + l_icon_width + MAX(0, center), y), Size2(caret_width, h));
 							} break;
 							case HORIZONTAL_ALIGNMENT_RIGHT: {
 								if (rtl) {
-									caret.l_caret = Rect2(Vector2(style->get_offset().x, y), Size2(caret_width, h));
+									caret.l_caret = Rect2(Vector2(x_ofs, y), Size2(caret_width, h));
 								} else {
 									caret.l_caret = Rect2(Vector2(ofs_max, y), Size2(caret_width, h));
 								}
@@ -1788,12 +1861,12 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 			if (rtl) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
 			} else {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			}
 		} break;
 		case HORIZONTAL_ALIGNMENT_CENTER: {
 			if (!Math::is_zero_approx(scroll_offset)) {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			} else {
 				int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
 				int centered = int((get_size().width - total_margin - text_width)) / 2;
@@ -1802,7 +1875,7 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 		} break;
 		case HORIZONTAL_ALIGNMENT_RIGHT: {
 			if (rtl) {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			} else {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
 			}
@@ -1811,16 +1884,49 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 
 	bool using_placeholder = text.is_empty() && ime_text.is_empty();
 	bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
-	if (right_icon.is_valid() || display_clear_icon) {
-		Ref<Texture2D> r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
+	Ref<Texture2D> l_icon;
+	Ref<Texture2D> r_icon;
+	int l_icon_sep = theme_cache.left_icon_separation;
+	int r_icon_sep = theme_cache.right_icon_separation;
+	if (!rtl) {
+		if (left_icon.is_valid()) {
+			l_icon = left_icon;
+		}
+		if (right_icon.is_valid() || display_clear_icon) {
+			r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
+		}
+	} else {
+		if (left_icon.is_valid()) {
+			r_icon = left_icon;
+		}
+		if (right_icon.is_valid() || display_clear_icon) {
+			l_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
+		}
+		l_icon_sep = theme_cache.right_icon_separation;
+		r_icon_sep = theme_cache.left_icon_separation;
+	}
+	if (r_icon.is_valid()) {
 		if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
 			if (Math::is_zero_approx(scroll_offset)) {
 				int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
-				int center = int(get_size().width - total_margin - text_width - r_icon->get_width()) / 2;
+				int center = int(get_size().width - total_margin - text_width - r_icon->get_width() - r_icon_sep) / 2;
 				x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, center);
 			}
 		} else {
-			x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+			x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - r_icon_sep);
+		}
+	}
+	if (l_icon.is_valid()) {
+		if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
+			if (Math::is_zero_approx(scroll_offset)) {
+				int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
+				int center = int(get_size().width - total_margin - text_width - l_icon->get_width() - l_icon_sep - (r_icon.is_valid() ? r_icon->get_width() + r_icon_sep : 0)) / 2;
+				x_ofs = style->get_margin(SIDE_LEFT) + l_icon->get_width() + l_icon_sep + MAX(0, center);
+			} else {
+				x_ofs += l_icon->get_width() + l_icon_sep;
+			}
+		} else {
+			x_ofs = MAX(style->get_margin(SIDE_LEFT) + l_icon->get_width() + l_icon_sep, x_ofs);
 		}
 	}
 
@@ -1843,12 +1949,12 @@ Vector2 LineEdit::get_caret_pixel_pos() {
 			if (rtl) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
 			} else {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			}
 		} break;
 		case HORIZONTAL_ALIGNMENT_CENTER: {
 			if (!Math::is_zero_approx(scroll_offset)) {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			} else {
 				int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
 				int centered = int((get_size().width - total_margin - text_width)) / 2;
@@ -1857,7 +1963,7 @@ Vector2 LineEdit::get_caret_pixel_pos() {
 		} break;
 		case HORIZONTAL_ALIGNMENT_RIGHT: {
 			if (rtl) {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			} else {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
 			}
@@ -1866,16 +1972,49 @@ Vector2 LineEdit::get_caret_pixel_pos() {
 
 	bool using_placeholder = text.is_empty() && ime_text.is_empty();
 	bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
-	if (right_icon.is_valid() || display_clear_icon) {
-		Ref<Texture2D> r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
+	Ref<Texture2D> l_icon;
+	Ref<Texture2D> r_icon;
+	int l_icon_sep = theme_cache.left_icon_separation;
+	int r_icon_sep = theme_cache.right_icon_separation;
+	if (!rtl) {
+		if (left_icon.is_valid()) {
+			l_icon = left_icon;
+		}
+		if (right_icon.is_valid() || display_clear_icon) {
+			r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
+		}
+	} else {
+		if (left_icon.is_valid()) {
+			r_icon = left_icon;
+		}
+		if (right_icon.is_valid() || display_clear_icon) {
+			l_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
+		}
+		l_icon_sep = theme_cache.right_icon_separation;
+		r_icon_sep = theme_cache.left_icon_separation;
+	}
+	if (r_icon.is_valid()) {
 		if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
 			if (Math::is_zero_approx(scroll_offset)) {
 				int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
-				int center = int(get_size().width - total_margin - text_width - r_icon->get_width()) / 2;
+				int center = int(get_size().width - total_margin - text_width - r_icon->get_width() - r_icon_sep) / 2;
 				x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, center);
 			}
 		} else {
-			x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+			x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - r_icon_sep);
+		}
+	}
+	if (l_icon.is_valid()) {
+		if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
+			if (Math::is_zero_approx(scroll_offset)) {
+				int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
+				int center = int(get_size().width - total_margin - text_width - l_icon->get_width() - l_icon_sep - (r_icon.is_valid() ? r_icon->get_width() + r_icon_sep : 0)) / 2;
+				x_ofs = style->get_margin(SIDE_LEFT) + l_icon->get_width() + l_icon_sep + MAX(0, center);
+			} else {
+				x_ofs += l_icon->get_width() + l_icon_sep;
+			}
+		} else {
+			x_ofs = MAX(style->get_margin(SIDE_LEFT) + l_icon->get_width() + l_icon_sep, x_ofs);
 		}
 	}
 
@@ -2198,12 +2337,12 @@ void LineEdit::set_caret_column(int p_column) {
 			if (rtl) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
 			} else {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			}
 		} break;
 		case HORIZONTAL_ALIGNMENT_CENTER: {
 			if (!Math::is_zero_approx(scroll_offset)) {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			} else {
 				int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
 				int centered = int((get_size().width - total_margin - text_width)) / 2;
@@ -2212,7 +2351,7 @@ void LineEdit::set_caret_column(int p_column) {
 		} break;
 		case HORIZONTAL_ALIGNMENT_RIGHT: {
 			if (rtl) {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			} else {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
 			}
@@ -2222,18 +2361,51 @@ void LineEdit::set_caret_column(int p_column) {
 	int ofs_max = get_size().width - style->get_margin(SIDE_RIGHT);
 	bool using_placeholder = text.is_empty() && ime_text.is_empty();
 	bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
-	if (right_icon.is_valid() || display_clear_icon) {
-		Ref<Texture2D> r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
+	Ref<Texture2D> l_icon;
+	Ref<Texture2D> r_icon;
+	int l_icon_sep = theme_cache.left_icon_separation;
+	int r_icon_sep = theme_cache.right_icon_separation;
+	if (!rtl) {
+		if (left_icon.is_valid()) {
+			l_icon = left_icon;
+		}
+		if (right_icon.is_valid() || display_clear_icon) {
+			r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
+		}
+	} else {
+		if (left_icon.is_valid()) {
+			r_icon = left_icon;
+		}
+		if (right_icon.is_valid() || display_clear_icon) {
+			l_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
+		}
+		l_icon_sep = theme_cache.right_icon_separation;
+		r_icon_sep = theme_cache.left_icon_separation;
+	}
+	if (r_icon.is_valid()) {
 		if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
 			if (Math::is_zero_approx(scroll_offset)) {
 				int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
-				int center = int(get_size().width - total_margin - text_width - r_icon->get_width()) / 2;
+				int center = int(get_size().width - total_margin - text_width - r_icon->get_width() - r_icon_sep) / 2;
 				x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, center);
 			}
 		} else {
-			x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+			x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - r_icon_sep);
 		}
-		ofs_max -= r_icon->get_width();
+		ofs_max -= r_icon->get_width() + r_icon_sep;
+	}
+	if (l_icon.is_valid()) {
+		if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
+			if (Math::is_zero_approx(scroll_offset)) {
+				int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
+				int center = int(get_size().width - total_margin - text_width - l_icon->get_width() - l_icon_sep - (r_icon.is_valid() ? r_icon->get_width() + r_icon_sep : 0)) / 2;
+				x_ofs = style->get_margin(SIDE_LEFT) + l_icon->get_width() + l_icon_sep + MAX(0, center);
+			} else {
+				x_ofs += l_icon->get_width() + l_icon_sep;
+			}
+		} else {
+			x_ofs = MAX(style->get_margin(SIDE_LEFT) + l_icon->get_width() + l_icon_sep, x_ofs);
+		}
 	}
 
 	// Note: Use two coordinates to fit IME input range.
@@ -2834,6 +3006,30 @@ void LineEdit::_texture_changed() {
 	queue_redraw();
 }
 
+void LineEdit::set_left_icon(const Ref<Texture2D> &p_icon) {
+	if (left_icon == p_icon) {
+		return;
+	}
+
+	if (left_icon.is_valid()) {
+		left_icon->disconnect_changed(callable_mp(this, &LineEdit::_texture_changed));
+	}
+
+	left_icon = p_icon;
+
+	if (left_icon.is_valid()) {
+		left_icon->connect_changed(callable_mp(this, &LineEdit::_texture_changed));
+	}
+
+	_fit_to_width();
+	update_minimum_size();
+	queue_redraw();
+}
+
+Ref<Texture2D> LineEdit::get_left_icon() {
+	return left_icon;
+}
+
 void LineEdit::set_right_icon(const Ref<Texture2D> &p_icon) {
 	if (right_icon == p_icon) {
 		return;
@@ -2956,8 +3152,11 @@ void LineEdit::_fit_to_width() {
 		bool using_placeholder = text.is_empty() && ime_text.is_empty();
 		bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 		if (right_icon.is_valid() || display_clear_icon) {
-			Ref<Texture2D> r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
-			t_width -= r_icon->get_width();
+				Ref<Texture2D> r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
+				t_width -= r_icon->get_width() + theme_cache.right_icon_separation;
+			}
+		if (left_icon.is_valid()) {
+			t_width -= left_icon->get_width() + theme_cache.left_icon_separation;
 		}
 		TS->shaped_text_fit_to_width(text_rid, MAX(t_width, full_width));
 	}
@@ -3232,6 +3431,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_deselect_on_focus_loss_enabled"), &LineEdit::is_deselect_on_focus_loss_enabled);
 	ClassDB::bind_method(D_METHOD("set_drag_and_drop_selection_enabled", "enable"), &LineEdit::set_drag_and_drop_selection_enabled);
 	ClassDB::bind_method(D_METHOD("is_drag_and_drop_selection_enabled"), &LineEdit::is_drag_and_drop_selection_enabled);
+	ClassDB::bind_method(D_METHOD("set_left_icon", "icon"), &LineEdit::set_left_icon);
+	ClassDB::bind_method(D_METHOD("get_left_icon"), &LineEdit::get_left_icon);
 	ClassDB::bind_method(D_METHOD("set_right_icon", "icon"), &LineEdit::set_right_icon);
 	ClassDB::bind_method(D_METHOD("get_right_icon"), &LineEdit::get_right_icon);
 	ClassDB::bind_method(D_METHOD("set_flat", "enabled"), &LineEdit::set_flat);
@@ -3305,6 +3506,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selecting_enabled"), "set_selecting_enabled", "is_selecting_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_and_drop_selection_enabled"), "set_drag_and_drop_selection_enabled", "is_drag_and_drop_selection_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "left_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_left_icon", "get_left_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "right_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_right_icon", "get_right_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_control_chars"), "set_draw_control_chars", "get_draw_control_chars");
@@ -3347,6 +3549,9 @@ void LineEdit::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, LineEdit, clear_icon, "clear");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, clear_button_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, clear_button_color_pressed);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, LineEdit, left_icon_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, LineEdit, right_icon_separation);
 
 	ADD_CLASS_DEPENDENCY("PopupMenu");
 }

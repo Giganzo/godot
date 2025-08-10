@@ -432,6 +432,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("minimum_character_width", "LineEdit", 4);
 	theme->set_constant("outline_size", "LineEdit", 0);
 	theme->set_constant("caret_width", "LineEdit", 1);
+	theme->set_constant("left_icon_separation", "LineEdit", Math::round(4 * scale));
+	theme->set_constant("right_icon_separation", "LineEdit", Math::round(4 * scale));
 
 	theme->set_icon("clear", "LineEdit", icons["line_edit_clear"]);
 

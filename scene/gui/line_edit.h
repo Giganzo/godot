@@ -156,6 +156,7 @@ private:
 	bool drag_action = false;
 	bool drag_caret_force_displayed = false;
 
+	Ref<Texture2D> left_icon;
 	Ref<Texture2D> right_icon;
 	bool flat = false;
 
@@ -216,6 +217,9 @@ private:
 		Ref<Texture2D> clear_icon;
 		Color clear_button_color;
 		Color clear_button_color_pressed;
+
+		int left_icon_separation = 0;
+		int right_icon_separation = 0;
 
 		float base_scale = 1.0;
 	} theme_cache;
@@ -422,6 +426,8 @@ public:
 	void set_drag_and_drop_selection_enabled(const bool p_enabled);
 	bool is_drag_and_drop_selection_enabled() const;
 
+	void set_left_icon(const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_left_icon();
 	void set_right_icon(const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_right_icon();
 
