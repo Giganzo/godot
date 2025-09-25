@@ -38,9 +38,11 @@
 #include "scene/2d/camera_2d.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/subviewport_container.h"
+#include "scene/gui/text_edit.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/resources/dpi_texture.h"
@@ -532,7 +534,14 @@ void Viewport::_update_viewport_path() {
 }
 
 bool Viewport::_can_hide_focus_state() {
-	return Engine::get_singleton()->is_editor_hint() || !GLOBAL_GET_CACHED(bool, "gui/common/always_show_focus_state");
+	int pointer_focus_setting = GLOBAL_GET_CACHED(int, "gui/common/show_focus_state_on_pointer_event");
+	if (pointer_focus_setting == 1 && gui.key_focus) {
+		if (Object::cast_to<LineEdit>(gui.key_focus) || Object::cast_to<TextEdit>(gui.key_focus)) {
+			return Engine::get_singleton()->is_editor_hint();
+		}
+	}
+
+	return Engine::get_singleton()->is_editor_hint() || pointer_focus_setting < 2;
 }
 
 void Viewport::_on_settings_changed() {
@@ -2715,6 +2724,8 @@ void Viewport::_gui_control_grab_focus(Control *p_control, bool p_hide_focus) {
 		gui.key_focus = p_control;
 		if (_can_hide_focus_state()) {
 			gui.hide_focus = p_hide_focus;
+		} else {
+			gui.hide_focus = false;
 		}
 		emit_signal(SNAME("gui_focus_changed"), p_control);
 		p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
