@@ -44,6 +44,7 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/texture_button.h"
@@ -351,8 +352,9 @@ ProjectListItemControl::ProjectListItemControl() {
 	set_focus_mode(FocusMode::FOCUS_ALL);
 	set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
-	VBoxContainer *favorite_box = memnew(VBoxContainer);
-	favorite_box->set_alignment(BoxContainer::ALIGNMENT_CENTER);
+	MarginContainer *favorite_box = memnew(MarginContainer);
+	favorite_box->set_v_size_flags(SIZE_SHRINK_CENTER);
+	favorite_box->add_theme_constant_override("margin_left", 10 * EDSCALE);
 	add_child(favorite_box);
 
 	favorite_button = memnew(TextureButton);
