@@ -2081,7 +2081,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	open_asset->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_asset_open));
 
 	Button *plugins = memnew(Button);
-	plugins->set_text(TTRC("Plugins..."));
+	plugins->set_text(TTRC("Addons..."));
 	search_hb->add_child(plugins);
 	plugins->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_manage_plugins));
 

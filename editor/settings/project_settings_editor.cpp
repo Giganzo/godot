@@ -104,7 +104,10 @@ void ProjectSettingsEditor::_save() {
 }
 
 void ProjectSettingsEditor::set_plugins_page() {
-	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(plugin_settings));
+	Control *addons_container = Object::cast_to<Control>(plugin_settings->get_parent());
+	if (addons_container) {
+		tab_container->set_current_tab(tab_container->get_tab_idx_from_control(addons_container));
+	}
 }
 
 void ProjectSettingsEditor::set_general_page(const String &p_category) {
